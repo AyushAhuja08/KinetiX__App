@@ -19,7 +19,7 @@ struct EscapeVelocityVisualizeView: View {
                 }
 
                 // Horizontal swipable row for secondary cards
-                ScrollView(.horizontal, showsIndicators: false) {
+                if isRegular {
                     HStack(alignment: .top, spacing: 16) {
                         TitledCard(
                             title: "Speed vs Escape Velocity",
@@ -55,7 +55,8 @@ struct EscapeVelocityVisualizeView: View {
                                 }
                             }
                         }
-                        .frame(width: isRegular ? 480 : 310, height: isRegular ? 460 : 390)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
 
                         TitledCard(
                             title: "Graphs",
@@ -67,11 +68,64 @@ struct EscapeVelocityVisualizeView: View {
                                 .accessibilityAddTraits(.updatesFrequently)
                                 .accessibilityHint("Double-tap to hear current speed vs escape velocity comparison.")
                         }
-                        .frame(width: isRegular ? 480 : 310, height: isRegular ? 460 : 390)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
                     }
-                    .padding(.horizontal, 16)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .top, spacing: 16) {
+                            TitledCard(
+                                title: "Speed vs Escape Velocity",
+                                description: "Compare your current speed to the escape velocity for the selected body. If your speed is above escape velocity, the object will leave the gravitational pull."
+                            ) {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    HStack {
+                                        Text("Status: \(viewModel.stateDescription)")
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(viewModel.stateColor)
+                                        Spacer()
+                                    }
+                                    HStack(spacing: 12) {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("Your Speed")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                            Text(String(format: "%.2f km/s", viewModel.bodySpeed))
+                                                .font(.title2).fontWeight(.bold).foregroundStyle(.blue)
+                                        }
+                                        .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                                        .background(Color.blue.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 10))
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("Escape Velocity")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                            Text(String(format: "%.1f km/s", viewModel.surfaceEscapeVelocity))
+                                                .font(.title2).fontWeight(.bold).foregroundStyle(.red)
+                                        }
+                                        .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                                        .background(Color.red.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 10))
+                                    }
+                                }
+                            }
+                            .frame(width: 310, height: 390)
+
+                            TitledCard(
+                                title: "Graphs",
+                                description: "Switch between Altitude, Velocity, and Distance from Center. The graph updates as the simulation runs."
+                            ) {
+                                EscapeVelocityGraphsView(viewModel: viewModel)
+                                    .accessibilityElement()
+                                    .accessibilityLabel(viewModel.graphAccessibilityLabel)
+                                    .accessibilityAddTraits(.updatesFrequently)
+                                    .accessibilityHint("Double-tap to hear current speed vs escape velocity comparison.")
+                            }
+                            .frame(width: 310, height: 390)
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.horizontal, -16) // Allows scrolling edge-to-edge
                 }
-                .padding(.horizontal, -16) // Allows scrolling edge-to-edge
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)

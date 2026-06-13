@@ -22,7 +22,7 @@ struct LinearMotionVisualizeView: View {
                 }
 
                 // Horizontal swipable row for Live Values and What's Happening
-                ScrollView(.horizontal, showsIndicators: false) {
+                if isRegular {
                     HStack(alignment: .top, spacing: 16) {
                         TitledCard(
                             title: "Live Values",
@@ -30,7 +30,8 @@ struct LinearMotionVisualizeView: View {
                         ) {
                             LiveValuesPanel(values: viewModel.liveValuesData)
                         }
-                        .frame(width: isRegular ? 480 : 310, height: isRegular ? 460 : 390)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
 
                         TitledCard(
                             title: "What’s Happening?",
@@ -45,14 +46,42 @@ struct LinearMotionVisualizeView: View {
                                 formula: insight.formula
                             )
                         }
-                        .frame(width: isRegular ? 480 : 310, height: isRegular ? 460 : 390)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
                     }
-                    .padding(.horizontal, 16)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .top, spacing: 16) {
+                            TitledCard(
+                                title: "Live Values",
+                                description: "Current distance, velocity, and acceleration in real time as the simulation runs."
+                            ) {
+                                LiveValuesPanel(values: viewModel.liveValuesData)
+                            }
+                            .frame(width: 310, height: 390)
+
+                            TitledCard(
+                                title: "What’s Happening?",
+                                description: "A short explanation of the current motion state and how the physics applies."
+                            ) {
+                                let insight = viewModel.enhancedPhysicsInsight
+                                PhysicsInsightCard(
+                                    title: insight.title,
+                                    icon: insight.icon,
+                                    color: insight.color,
+                                    explanation: insight.explanation,
+                                    formula: insight.formula
+                                )
+                            }
+                            .frame(width: 310, height: 390)
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.horizontal, -16) // Allows scrolling edge-to-edge
                 }
-                .padding(.horizontal, -16) // Allows scrolling edge-to-edge
 
                 // Horizontal swipable row for Graphs and Sliders
-                ScrollView(.horizontal, showsIndicators: false) {
+                if isRegular {
                     HStack(alignment: .top, spacing: 16) {
                         TitledCard(
                             title: "Graphs",
@@ -60,7 +89,8 @@ struct LinearMotionVisualizeView: View {
                         ) {
                             LinearFocusModeGraphView(viewModel: viewModel)
                         }
-                        .frame(width: isRegular ? 480 : 310, height: isRegular ? 460 : 390)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
 
                         TitledCard(
                             title: "Adjust Parameters",
@@ -68,11 +98,32 @@ struct LinearMotionVisualizeView: View {
                         ) {
                             EnhancedLinearControlsView(viewModel: viewModel)
                         }
-                        .frame(width: isRegular ? 480 : 310, height: isRegular ? 460 : 390)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
                     }
-                    .padding(.horizontal, 16)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .top, spacing: 16) {
+                            TitledCard(
+                                title: "Graphs",
+                                description: "See how distance, velocity, and acceleration change over time. The graph updates as the simulation runs."
+                            ) {
+                                LinearFocusModeGraphView(viewModel: viewModel)
+                            }
+                            .frame(width: 310, height: 390)
+
+                            TitledCard(
+                                title: "Adjust Parameters",
+                                description: "Change initial velocity and acceleration here. After you change a value, the simulation and graphs update so you can see how the motion changes."
+                            ) {
+                                EnhancedLinearControlsView(viewModel: viewModel)
+                            }
+                            .frame(width: 310, height: 390)
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.horizontal, -16) // Allows scrolling edge-to-edge
                 }
-                .padding(.horizontal, -16) // Allows scrolling edge-to-edge
 
                 if let lastChange = viewModel.changeEvents.last,
                    viewModel.currentTime - lastChange.time < 1.0 {

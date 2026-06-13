@@ -21,7 +21,7 @@ struct ProjectileMotionVisualizeView: View {
                 }
 
                 // Horizontal swipable row for Live Values and What's Happening
-                ScrollView(.horizontal, showsIndicators: false) {
+                if isRegular {
                     HStack(alignment: .top, spacing: 16) {
                         TitledCard(
                             title: "Live Values",
@@ -29,7 +29,8 @@ struct ProjectileMotionVisualizeView: View {
                         ) {
                             LiveValuesPanel(values: viewModel.liveValuesData)
                         }
-                        .frame(width: isRegular ? 480 : 310, height: isRegular ? 460 : 390)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
 
                         TitledCard(
                             title: "What’s Happening?",
@@ -44,14 +45,42 @@ struct ProjectileMotionVisualizeView: View {
                                 formula: insight.formula
                             )
                         }
-                        .frame(width: isRegular ? 480 : 310, height: isRegular ? 460 : 390)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
                     }
-                    .padding(.horizontal, 16)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .top, spacing: 16) {
+                            TitledCard(
+                                title: "Live Values",
+                                description: "Current horizontal and vertical position, velocity components, and speed in real time."
+                            ) {
+                                LiveValuesPanel(values: viewModel.liveValuesData)
+                            }
+                            .frame(width: 310, height: 390)
+
+                            TitledCard(
+                                title: "What’s Happening?",
+                                description: "A short explanation of the current flight phase and how the physics applies."
+                            ) {
+                                let insight = viewModel.enhancedPhysicsInsight
+                                PhysicsInsightCard(
+                                    title: insight.title,
+                                    icon: insight.icon,
+                                    color: insight.color,
+                                    explanation: insight.explanation,
+                                    formula: insight.formula
+                                )
+                            }
+                            .frame(width: 310, height: 390)
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.horizontal, -16) // Allows scrolling edge-to-edge
                 }
-                .padding(.horizontal, -16) // Allows scrolling edge-to-edge
 
                 // Horizontal swipable row for Graphs and Sliders
-                ScrollView(.horizontal, showsIndicators: false) {
+                if isRegular {
                     HStack(alignment: .top, spacing: 16) {
                         TitledCard(
                             title: "Graphs",
@@ -109,7 +138,8 @@ struct ProjectileMotionVisualizeView: View {
                                 }
                             }
                         }
-                        .frame(width: isRegular ? 480 : 310, height: isRegular ? 460 : 390)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
 
                         TitledCard(
                             title: "Adjust Parameters",
@@ -117,11 +147,83 @@ struct ProjectileMotionVisualizeView: View {
                         ) {
                             EnhancedProjectileControlsView(viewModel: viewModel)
                         }
-                        .frame(width: isRegular ? 480 : 310, height: isRegular ? 460 : 390)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
                     }
-                    .padding(.horizontal, 16)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .top, spacing: 16) {
+                            TitledCard(
+                                title: "Graphs",
+                                description: "Switch between X vs Time (horizontal position) and Y vs Time (vertical position). The graph updates as the simulation runs."
+                            ) {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Picker("Graph", selection: Binding(
+                                        get: { viewModel.selectedAxis },
+                                        set: { viewModel.selectedAxis = $0
+                                        }
+                                    )) {
+                                        Text("X vs Time").tag(ProjectileAxis.x)
+                                        Text("Y vs Time").tag(ProjectileAxis.y)
+                                    }
+                                    .pickerStyle(.segmented)
+                                    ProjectileSegmentedGraphView(
+                                        segments: viewModel.currentGraphSegments,
+                                        title: viewModel.selectedAxis == .x
+                                            ? "Horizontal Position vs Time"
+                                            : "Vertical Position vs Time",
+                                        yLabel: viewModel.selectedAxis == .x ? "X (m)" : "Y (m)",
+                                        currentTime: viewModel.currentTime
+                                    )
+                                    .frame(height: 280)
+                                    .accessibilityElement()
+                                    .accessibilityLabel(viewModel.graphAccessibilityLabel)
+                                    .accessibilityAddTraits(.updatesFrequently)
+                                    .accessibilityHint("Double-tap to hear graph description. Use the X vs Time / Y vs Time picker to switch axes.")
+                                    if viewModel.xSegments.count > 1 {
+                                        HStack(spacing: 16) {
+                                            HStack(spacing: 4) {
+                                                Rectangle()
+                                                    .fill(viewModel.selectedAxis == .x ? Color.blue : Color.green)
+                                                    .frame(width: 20, height: 3)
+                                                Text("Active")
+                                                    .font(.caption2)
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                            HStack(spacing: 4) {
+                                                Rectangle()
+                                                    .fill((viewModel.selectedAxis == .x ? Color.blue : Color.green).opacity(0.3))
+                                                    .frame(width: 20, height: 3)
+                                                Text("Predicted")
+                                                    .font(.caption2)
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                            HStack(spacing: 4) {
+                                                Circle()
+                                                    .fill(Color.orange)
+                                                    .frame(width: 8, height: 8)
+                                                Text("Change Point")
+                                                    .font(.caption2)
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .frame(width: 310, height: 390)
+
+                            TitledCard(
+                                title: "Adjust Parameters",
+                                description: "Change launch speed and angle here. After you change a value, the trajectory and graphs update so you can see the effect."
+                            ) {
+                                EnhancedProjectileControlsView(viewModel: viewModel)
+                            }
+                            .frame(width: 310, height: 390)
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.horizontal, -16) // Allows scrolling edge-to-edge
                 }
-                .padding(.horizontal, -16) // Allows scrolling edge-to-edge
 
                 if let lastChange = viewModel.changeEvents.last,
                    viewModel.currentTime - lastChange.time < 1.0 {

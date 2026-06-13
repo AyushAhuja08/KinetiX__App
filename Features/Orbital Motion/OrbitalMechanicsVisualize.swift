@@ -13,14 +13,23 @@ struct OrbitalMechanicsVisualizeView: View {
             VStack(alignment: .leading, spacing: 20) {
                 TitledCard(
                     title: "Simulation",
-                    description: "Watch the satellite orbit the planet. Use play, pause, and reset to control time. Turn on velocity, acceleration, or gravity vectors and the orbit trail below. Then adjust launch speed, angle, altitude, and planet mass to see how the orbit changes."
+                    description: "Watch the satellite orbit the planet. Use play, pause, and reset to control time. Turn on velocity, acceleration, or gravity vectors and the orbit trail in display options below."
                 ) {
                     OrbitalSimulationPanel(viewModel: viewModel)
                 }
 
-                // Horizontal swipable row for graphs and energy overview
-                ScrollView(.horizontal, showsIndicators: false) {
+                // Horizontal swipable row for parameters and active graph
+                if isRegular {
                     HStack(alignment: .top, spacing: 16) {
+                        TitledCard(
+                            title: "Adjust Parameters",
+                            description: "Adjust launch speed, angle, altitude, and planet mass to see how the orbit changes."
+                        ) {
+                            OrbitalControlsView(viewModel: viewModel)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
+
                         TitledCard(
                             title: "Active Graph",
                             description: "Switch between kinetic, potential, total energy, and orbital radius."
@@ -35,8 +44,44 @@ struct OrbitalMechanicsVisualizeView: View {
                                     .frame(height: 220)
                             }
                         }
-                        .frame(width: isRegular ? 480 : 310)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
+                    }
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .top, spacing: 16) {
+                            TitledCard(
+                                title: "Adjust Parameters",
+                                description: "Adjust launch speed, angle, altitude, and planet mass to see how the orbit changes."
+                            ) {
+                                OrbitalControlsView(viewModel: viewModel)
+                            }
+                            .frame(width: 310, height: 390)
 
+                            TitledCard(
+                                title: "Active Graph",
+                                description: "Switch between kinetic, potential, total energy, and orbital radius."
+                            ) {
+                                VStack(spacing: 12) {
+                                    Picker("Graph", selection: Binding(get: { viewModel.selectedGraph }, set: { viewModel.selectedGraph = $0 })) {
+                                        ForEach(OrbitalGraphType.allCases, id: \.self) { Text($0.label).tag($0) }
+                                    }
+                                    .pickerStyle(.segmented)
+                                    
+                                    OrbitalGraphView(viewModel: viewModel)
+                                        .frame(height: 220)
+                                }
+                            }
+                            .frame(width: 310, height: 390)
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.horizontal, -16) // Allows scrolling edge-to-edge
+                }
+
+                // Horizontal swipable row for energy overview, display toggles, and explanation
+                if isRegular {
+                    HStack(alignment: .top, spacing: 16) {
                         TitledCard(
                             title: "Energy Overview",
                             description: "Shows kinetic, potential, and total energy over time."
@@ -44,19 +89,42 @@ struct OrbitalMechanicsVisualizeView: View {
                             OrbitalAllEnergyGraph(viewModel: viewModel)
                                 .frame(height: 220)
                         }
-                        .frame(width: isRegular ? 480 : 310)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
 
                         TitledCard(
-                            title: "Physics Explanation",
-                            description: "A short explanation of the selected orbit property and how it changes."
+                            title: "Display Options",
+                            description: "Turn on velocity, acceleration, or gravity vectors, orbit trail, and choose integrator."
                         ) {
-                            OrbitalGraphInfoCard(graphType: viewModel.selectedGraph)
+                            OrbitalToggles(viewModel: viewModel)
                         }
-                        .frame(width: isRegular ? 380 : 280)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 460)
                     }
-                    .padding(.horizontal, 16)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .top, spacing: 16) {
+                            TitledCard(
+                                title: "Energy Overview",
+                                description: "Shows kinetic, potential, and total energy over time."
+                            ) {
+                                OrbitalAllEnergyGraph(viewModel: viewModel)
+                                    .frame(height: 220)
+                            }
+                            .frame(width: 310, height: 390)
+
+                            TitledCard(
+                                title: "Display Options",
+                                description: "Turn on velocity, acceleration, or gravity vectors, orbit trail, and choose integrator."
+                            ) {
+                                OrbitalToggles(viewModel: viewModel)
+                            }
+                            .frame(width: 310, height: 390)
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.horizontal, -16) // Allows scrolling edge-to-edge
                 }
-                .padding(.horizontal, -16) // Allows scrolling edge-to-edge
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
@@ -81,15 +149,24 @@ struct OrbitalSimulationPanel: View {
 
             OrbitalPlaybackControls(viewModel: viewModel)
                 .padding(.horizontal)
+        }
+    }
+}
 
-            OrbitalToggles(viewModel: viewModel)
-                .padding(.horizontal)
+struct OrbitalControlsView: View {
+    var viewModel: OrbitalMechanicsViewModel
 
-            OrbitalSliderPanel(viewModel: viewModel)
-                .padding(.horizontal)
-
-            OrbitalPresetRow(viewModel: viewModel)
-                .padding(.horizontal)
+    var body: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(spacing: 20) {
+                OrbitalSliderPanel(viewModel: viewModel)
+                
+                Divider()
+                    .background(AppTheme.tertiaryText.opacity(0.3))
+                
+                OrbitalPresetRow(viewModel: viewModel)
+            }
+            .padding(.vertical, 4)
         }
     }
 }
@@ -343,10 +420,7 @@ struct OrbitalToggles: View {
     var viewModel: OrbitalMechanicsViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Display Options")
-                .font(.caption).foregroundStyle(AppTheme.secondaryText)
-
+        VStack(alignment: .leading, spacing: 12) {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                 OrbitalToggleChip(label: "Velocity (v)",     color: .green,  isOn: Binding(get: { viewModel.showVelocityVector }, set: { viewModel.showVelocityVector = $0 }))
                 OrbitalToggleChip(label: "Acceleration (a)", color: .orange, isOn: Binding(get: { viewModel.showAccelerationVector }, set: { viewModel.showAccelerationVector = $0 }))
@@ -363,9 +437,6 @@ struct OrbitalToggles: View {
                 .pickerStyle(.segmented)
             }
         }
-        .padding(12)
-        .background(AppTheme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
@@ -401,8 +472,6 @@ struct OrbitalSliderPanel: View {
         VStack(alignment: .leading, spacing: 12) {
 
             HStack {
-                Text("Launch Parameters")
-                    .font(.caption).foregroundStyle(AppTheme.secondaryText)
                 Spacer()
                 Text("Units: real km/s & km")
                     .font(.system(size: 9)).foregroundStyle(AppTheme.tertiaryText)
@@ -491,9 +560,6 @@ struct OrbitalSliderPanel: View {
                 }
             )
         }
-        .padding(12)
-        .background(AppTheme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
@@ -582,9 +648,6 @@ struct OrbitalPresetRow: View {
                 .padding(.top, 4)
             }
         }
-        .padding(12)
-        .background(AppTheme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
@@ -598,35 +661,7 @@ struct OrbitalRealFact: View {
     }
 }
 
-struct OrbitalGraphPanel: View {
-    var viewModel: OrbitalMechanicsViewModel
 
-    var body: some View {
-        VStack(spacing: 12) {
-            Picker("Graph", selection: Binding(get: { viewModel.selectedGraph }, set: { viewModel.selectedGraph = $0 })) {
-                ForEach(OrbitalGraphType.allCases, id: \.self) { Text($0.label).tag($0) }
-            }
-            .pickerStyle(.segmented).padding(.horizontal)
-
-            OrbitalGraphView(viewModel: viewModel)
-                .frame(height: 220).padding(.horizontal)
-                .accessibilityElement()
-                .accessibilityLabel(viewModel.selectedGraphAccessibilityLabel)
-                .accessibilityAddTraits(.updatesFrequently)
-                .accessibilityHint("Double-tap to hear graph description. Use the picker above to switch between Kinetic Energy, Potential Energy, Total Energy, and Radius.")
-
-            OrbitalAllEnergyGraph(viewModel: viewModel)
-                .frame(height: 180).padding(.horizontal)
-                .accessibilityElement()
-                .accessibilityLabel(viewModel.energyOverviewAccessibilityLabel)
-                .accessibilityAddTraits(.updatesFrequently)
-                .accessibilityHint("Double-tap to hear energy overview. Shows kinetic, potential, and total energy over time.")
-
-            OrbitalGraphInfoCard(graphType: viewModel.selectedGraph)
-                .padding(.horizontal)
-        }
-    }
-}
 
 struct OrbitalGraphView: View {
     var viewModel: OrbitalMechanicsViewModel
@@ -741,28 +776,4 @@ struct OrbitalAllEnergyGraph: View {
     }
 }
 
-struct OrbitalGraphInfoCard: View {
-    let graphType: OrbitalGraphType
 
-    var explanation: String {
-        switch graphType {
-        case .kineticEnergy:
-            return "KE = ½v² (km²/s²). Peaks at periapsis (fastest point) and dips at apoapsis (slowest point). For Earth orbit, a 400 km circular orbit has KE ≈ 29.4 km²/s²."
-        case .potentialEnergy:
-            return "PE = -GM/r (km²/s²). Always negative. Becomes less negative as altitude increases. For Earth at 400 km, PE ≈ -58.8 km²/s²."
-        case .totalEnergy:
-            return "Total E = KE + PE. Negative → bound elliptical orbit. Near zero → parabolic. Positive → hyperbolic escape. Stays nearly constant for a stable orbit — any drift is integrator error."
-        case .radius:
-            return "Distance from planet centre in km. Oscillates between periapsis and apoapsis for an ellipse. Constant for a circular orbit. For ISS, radius ≈ 6,771 km."
-        }
-    }
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "info.circle.fill").foregroundStyle(graphType.color).font(.body)
-            Text(explanation).font(.caption).foregroundStyle(AppTheme.secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(12).background(AppTheme.surfaceBackground).clipShape(RoundedRectangle(cornerRadius: 10))
-    }
-}
