@@ -3,6 +3,7 @@ import SwiftUI
 
 struct LiveValuesPanel: View {
     let values: [LiveValue]
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     struct LiveValue: Identifiable {
         let id = UUID()
@@ -14,32 +15,33 @@ struct LiveValuesPanel: View {
     }
 
     var body: some View {
-        VStack(spacing: 10) {
+        let isRegular = horizontalSizeClass == .regular
+        VStack(spacing: isRegular ? 16 : 10) {
             ForEach(values) { item in
                 HStack(spacing: 10) {
                     Image(systemName: item.icon)
-                        .font(.title3)
+                        .font(isRegular ? .title2 : .title3)
                         .foregroundStyle(item.color)
-                        .frame(width: 30)
+                        .frame(width: isRegular ? 38 : 30)
 
                     Text(item.label)
-                        .font(.subheadline)
+                        .font(isRegular ? .body : .subheadline)
                         .foregroundStyle(.secondary)
 
                     Spacer()
 
                     HStack(spacing: 3) {
                         Text(item.value)
-                            .font(.headline)
+                            .font(isRegular ? .title3 : .headline)
                             .fontWeight(.semibold)
                             .foregroundStyle(item.color)
                         Text(item.unit)
-                            .font(.caption)
+                            .font(isRegular ? .subheadline : .caption)
                             .foregroundStyle(.secondary)
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, isRegular ? 16 : 12)
+                .padding(.vertical, isRegular ? 12 : 8)
                 .background(item.color.opacity(0.08))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .accessibilityElement(children: .combine)

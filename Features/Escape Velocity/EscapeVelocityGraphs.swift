@@ -1,204 +1,200 @@
-
-
 import SwiftUI
+
+enum EscapeVelocityGraphType: Int, CaseIterable, Identifiable {
+    case altitude = 0
+    case velocity = 1
+    case distance = 2
+    
+    var id: Self { self }
+    
+    var title: String {
+        switch self {
+        case .altitude: return "Altitude-Time"
+        case .velocity: return "Velocity-Time"
+        case .distance: return "Distance-Time"
+        }
+    }
+    
+    var segmentTitle: String {
+        switch self {
+        case .altitude: return "Altitude"
+        case .velocity: return "Velocity"
+        case .distance: return "Distance"
+        }
+    }
+    
+    var yLabel: String {
+        switch self {
+        case .altitude: return "Altitude (km)"
+        case .velocity: return "Velocity (km/s)"
+        case .distance: return "Distance (km)"
+        }
+    }
+}
 
 struct EscapeVelocityGraphsView: View {
     var viewModel: EscapeVelocityViewModel
 
     var body: some View {
-        VStack(spacing: 16) {
-
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Altitude vs Time")
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Image(systemName: "chart.line.uptrend.xyaxis")
-                        .foregroundStyle(.blue)
+        VStack(spacing: 12) {
+            Picker("Graph Type", selection: Binding(
+                get: { viewModel.selectedGraph },
+                set: { viewModel.selectedGraph = $0 }
+            )) {
+                ForEach(EscapeVelocityGraphType.allCases) { type in
+                    Text(type.segmentTitle).tag(type)
                 }
-
-                EscapeVelocityGraphView(
-                    points: viewModel.altitudePoints,
-                    title: "",
-                    yLabel: "Altitude (km)",
-                    color: .blue,
-                    maxTime: 10.0
-                )
-                .frame(height: 200)
-                .padding(16)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                Text("Shows how altitude changes over time. Escaping bodies move outward indefinitely, while decaying orbits spiral inward.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
+            .pickerStyle(.segmented)
 
+            EscapeVelocitySingleGraphView(
+                points: pointsForSelectedGraph,
+                title: viewModel.selectedGraph.title,
+                yLabel: viewModel.selectedGraph.yLabel,
+                color: colorForSelectedGraph,
+                maxTime: 10.0,
+                currentTime: viewModel.currentTime,
+                showEscapeVelocityLine: viewModel.selectedGraph == .velocity,
+                escapeVelocity: viewModel.surfaceEscapeVelocity
+            )
+            .frame(height: 280)
 
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Velocity vs Time")
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Image(systemName: "speedometer")
-                        .foregroundStyle(.green)
-                }
-
-                EscapeVelocityGraphView(
-                    points: viewModel.velocityPoints,
-                    title: "",
-                    yLabel: "Velocity (km/s)",
-                    color: .green,
-                    maxTime: 10.0,
-                    showEscapeVelocityLine: true,
-                    escapeVelocity: viewModel.surfaceEscapeVelocity
-                )
-                .frame(height: 200)
-                .padding(16)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                Text("Red dashed line shows escape velocity. Bodies above this line escape, below it fall back.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Distance from Center")
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Image(systemName: "arrow.up.and.down.circle")
-                        .foregroundStyle(.purple)
-                }
-
-                EscapeVelocityGraphView(
-                    points: viewModel.distancePoints,
-                    title: "",
-                    yLabel: "Distance (km)",
-                    color: .purple,
-                    maxTime: 10.0
-                )
-                .frame(height: 200)
-                .padding(16)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                Text("Total distance from planet center (radius + altitude). Watch it increase for escaping trajectories or decrease for falling objects.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            Text(descriptionForSelectedGraph)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(16)
+    }
+    
+    private var pointsForSelectedGraph: [CGPoint] {
+        switch viewModel.selectedGraph {
+        case .altitude: return viewModel.altitudePoints
+        case .velocity: return viewModel.velocityPoints
+        case .distance: return viewModel.distancePoints
+        }
+    }
+    
+    private var colorForSelectedGraph: Color {
+        switch viewModel.selectedGraph {
+        case .altitude: return .blue
+        case .velocity: return .green
+        case .distance: return .purple
+        }
+    }
+    
+    private var descriptionForSelectedGraph: String {
+        switch viewModel.selectedGraph {
+        case .altitude:
+            return "Shows how altitude changes over time. Escaping bodies move outward indefinitely, while decaying orbits spiral inward."
+        case .velocity:
+            return "Red dashed line shows escape velocity. Bodies above this line escape, below it fall back."
+        case .distance:
+            return "Total distance from planet center (radius + altitude). Watch it increase for escaping trajectories or decrease for falling objects."
+        }
     }
 }
 
-struct EscapeVelocityGraphView: View {
+struct EscapeVelocitySingleGraphView: View {
     let points: [CGPoint]
     let title: String
     let yLabel: String
     let color: Color
     let maxTime: Double
+    let currentTime: Double
     var showEscapeVelocityLine: Bool = false
     var escapeVelocity: Double = 0
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.headline)
+                .fontWeight(.semibold)
 
-                Color(.systemBackground)
-
-
-                Path { path in
-
-                    for i in 0...5 {
-                        let x = 40 + (geometry.size.width - 50) * CGFloat(i) / 5
-                        path.move(to: CGPoint(x: x, y: 10))
-                        path.addLine(to: CGPoint(x: x, y: geometry.size.height - 30))
-                    }
-
-                    for i in 0...4 {
-                        let y = 10 + (geometry.size.height - 40) * CGFloat(i) / 4
-                        path.move(to: CGPoint(x: 40, y: y))
-                        path.addLine(to: CGPoint(x: geometry.size.width - 10, y: y))
-                    }
-                }
-                .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
-
-
-                Path { path in
-
-                    path.move(to: CGPoint(x: 40, y: 10))
-                    path.addLine(to: CGPoint(x: 40, y: geometry.size.height - 30))
-
-                    path.addLine(to: CGPoint(x: geometry.size.width - 10, y: geometry.size.height - 30))
-                }
-                .stroke(Color.gray, lineWidth: 2)
-
-
-                if showEscapeVelocityLine && !points.isEmpty {
-                    //min
-                    let minY = points.map { $0.y }.min() ?? 0
-                    //max
-                    let maxY = points.map { $0.y }.max() ?? 1
-                    //range
-                    let rangeY = max(maxY - minY, 1)
-                    let normalizedEscapeVel = (escapeVelocity - minY) / rangeY
-                    let escapeY = geometry.size.height - 30 - CGFloat(normalizedEscapeVel) * (geometry.size.height - 40)
-
+            GeometryReader { geometry in
+                ZStack {
+                    // Grid Background
                     Path { path in
-                        path.move(to: CGPoint(x: 40, y: escapeY))
-                        path.addLine(to: CGPoint(x: geometry.size.width - 10, y: escapeY))
-                    }
-                    .stroke(Color.red.opacity(0.6), style: StrokeStyle(lineWidth: 2, dash: [5, 3]))
+                        for i in 0...10 {
+                            let x = 40 + (geometry.size.width - 50) * CGFloat(i) / 10
+                            path.move(to: CGPoint(x: x, y: 10))
+                            path.addLine(to: CGPoint(x: x, y: geometry.size.height - 25))
+                        }
 
-                    Text("Escape Velocity")
-                        .font(.caption2)
-                        .foregroundStyle(.red)
-                        .position(x: geometry.size.width - 60, y: escapeY - 10)
-                }
-
-
-                if points.count > 1 {
-                    Path { path in
-                        let scaled = scalePoints(points, to: geometry.size)
-                        path.move(to: scaled[0])
-                        for p in scaled.dropFirst() {
-                            path.addLine(to: p)
+                        for i in 0...5 {
+                            let y = 10 + (geometry.size.height - 35) * CGFloat(i) / 5
+                            path.move(to: CGPoint(x: 40, y: y))
+                            path.addLine(to: CGPoint(x: geometry.size.width - 10, y: y))
                         }
                     }
-                    .stroke(color, lineWidth: 3)
-                    .shadow(color: color.opacity(0.3), radius: 2, x: 0, y: 1)
-                }
+                    .stroke(Color.gray.opacity(0.15), lineWidth: 0.5)
 
-                //YLabel
-                Text(yLabel)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.secondary)
-                    .rotationEffect(.degrees(-90))
-                    .position(x: 15, y: geometry.size.height / 2)
+                    // Axes View
+                    Path { path in
+                        path.move(to: CGPoint(x: 40, y: 10))
+                        path.addLine(to: CGPoint(x: 40, y: geometry.size.height - 25))
+                        path.addLine(to: CGPoint(x: geometry.size.width - 10, y: geometry.size.height - 25))
+                    }
+                    .stroke(Color.primary.opacity(0.8), lineWidth: 2)
 
+                    // Escape Velocity Line (dashed red line)
+                    if showEscapeVelocityLine && !points.isEmpty {
+                        let minY = points.map { $0.y }.min() ?? 0
+                        let maxY = points.map { $0.y }.max() ?? 1
+                        let rangeY = max(maxY - minY, 1)
+                        let normalizedEscapeVel = (escapeVelocity - minY) / rangeY
+                        let graphHeight = geometry.size.height - 35
+                        let escapeY = (geometry.size.height - 25) - CGFloat(normalizedEscapeVel) * graphHeight
 
-                Text("Time (s)")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.secondary)
-                    .position(x: geometry.size.width / 2, y: geometry.size.height - 10)
+                        if escapeY >= 10 && escapeY <= (geometry.size.height - 25) {
+                            Path { path in
+                                path.move(to: CGPoint(x: 40, y: escapeY))
+                                path.addLine(to: CGPoint(x: geometry.size.width - 10, y: escapeY))
+                            }
+                            .stroke(Color.red.opacity(0.6), style: StrokeStyle(lineWidth: 2, dash: [5, 3]))
 
+                            Text("Escape Velocity")
+                                .font(.caption2)
+                                .foregroundStyle(.red)
+                                .position(x: geometry.size.width - 60, y: escapeY - 10)
+                        }
+                    }
 
-                ForEach(0..<6) { i in
-                    Text("\(i * 2)")
-                        .font(.caption2)
+                    // Curve Plot
+                    if points.count > 1 {
+                        Path { path in
+                            let scaled = scalePoints(points, to: geometry.size)
+                            path.move(to: scaled[0])
+                            for p in scaled.dropFirst() {
+                                path.addLine(to: p)
+                            }
+                        }
+                        .stroke(color, lineWidth: 3)
+                        .shadow(color: color.opacity(0.3), radius: 2, x: 0, y: 1)
+                    }
+
+                    // Time cursor (vertical red line)
+                    let xPos = 40 + (geometry.size.width - 50) * CGFloat(currentTime / maxTime)
+                    if xPos >= 40 && xPos <= (geometry.size.width - 10) {
+                        Path { path in
+                            path.move(to: CGPoint(x: xPos, y: 10))
+                            path.addLine(to: CGPoint(x: xPos, y: geometry.size.height - 25))
+                        }
+                        .stroke(Color.red.opacity(0.6), lineWidth: 2)
+                    }
+
+                    // Labels
+                    Text(yLabel)
+                        .font(.caption)
+                        .fontWeight(.medium)
                         .foregroundStyle(.secondary)
-                        .position(
-                            x: 40 + (geometry.size.width - 50) * CGFloat(i) / 5,
-                            y: geometry.size.height - 15
-                        )
+                        .rotationEffect(.degrees(-90))
+                        .position(x: 12, y: geometry.size.height / 2)
+
+                    Text("Time (s)")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.secondary)
+                        .position(x: geometry.size.width / 2, y: geometry.size.height - 3)
                 }
             }
         }
@@ -214,7 +210,8 @@ struct EscapeVelocityGraphView: View {
         return points.map { point in
             let x = 40 + (size.width - 50) * CGFloat(point.x / maxTime)
             let normalizedY = (point.y - minY) / rangeY
-            let y = size.height - 30 - CGFloat(normalizedY) * (size.height - 40)
+            let graphHeight = size.height - 35
+            let y = (size.height - 25) - CGFloat(normalizedY) * graphHeight
             return CGPoint(x: x, y: y)
         }
     }

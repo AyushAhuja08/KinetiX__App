@@ -4,8 +4,11 @@ import SwiftUI
 
 struct OrbitalMechanicsVisualizeView: View {
     var viewModel: OrbitalMechanicsViewModel
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     var body: some View {
+        let isRegular = horizontalSizeClass == .regular
+        
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 TitledCard(
@@ -14,13 +17,46 @@ struct OrbitalMechanicsVisualizeView: View {
                 ) {
                     OrbitalSimulationPanel(viewModel: viewModel)
                 }
-                //Graphs
-                TitledCard(
-                    title: "Graphs",
-                    description: "Switch between energy and other quantities to see how they change over time as the orbit runs."
-                ) {
-                    OrbitalGraphPanel(viewModel: viewModel)
+
+                // Horizontal swipable row for graphs and energy overview
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(alignment: .top, spacing: 16) {
+                        TitledCard(
+                            title: "Active Graph",
+                            description: "Switch between kinetic, potential, total energy, and orbital radius."
+                        ) {
+                            VStack(spacing: 12) {
+                                Picker("Graph", selection: Binding(get: { viewModel.selectedGraph }, set: { viewModel.selectedGraph = $0 })) {
+                                    ForEach(OrbitalGraphType.allCases, id: \.self) { Text($0.label).tag($0) }
+                                }
+                                .pickerStyle(.segmented)
+                                
+                                OrbitalGraphView(viewModel: viewModel)
+                                    .frame(height: 220)
+                            }
+                        }
+                        .frame(width: isRegular ? 480 : 310)
+
+                        TitledCard(
+                            title: "Energy Overview",
+                            description: "Shows kinetic, potential, and total energy over time."
+                        ) {
+                            OrbitalAllEnergyGraph(viewModel: viewModel)
+                                .frame(height: 220)
+                        }
+                        .frame(width: isRegular ? 480 : 310)
+
+                        TitledCard(
+                            title: "Physics Explanation",
+                            description: "A short explanation of the selected orbit property and how it changes."
+                        ) {
+                            OrbitalGraphInfoCard(graphType: viewModel.selectedGraph)
+                        }
+                        .frame(width: isRegular ? 380 : 280)
+                    }
+                    .padding(.horizontal, 16)
                 }
+                .padding(.horizontal, -16) // Allows scrolling edge-to-edge
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)

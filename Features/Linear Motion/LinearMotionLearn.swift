@@ -4,6 +4,7 @@ import SwiftUI
 
 struct LinearMotionLearnView: View {
     var viewModel: LinearMotionViewModel
+    @State private var showAllChanges = false
 
     var body: some View {
         ScrollView {
@@ -55,15 +56,36 @@ struct LinearMotionLearnView: View {
                     emptyPrompt: "Adjust any slider on the Visualize tab. Each change will appear here with a full physics explanation.",
                     onClear: { viewModel.changeEvents.removeAll() }
                 ) {
-                    ForEach(viewModel.changeEvents.reversed()) { event in
-                        PhysicsChangeCard(
-                            parameter: event.changedParameter,
-                            headline: event.headline,
-                            explanation: event.physicsExplanation,
-                            icon: event.paramIcon,
-                            color: event.paramColor,
-                            timestamp: String(format: "t = %.2f s", event.time)
-                        )
+                    let displayedEvents = showAllChanges ? viewModel.changeEvents.reversed() : Array(viewModel.changeEvents.reversed().prefix(3))
+                    
+                    VStack(spacing: 10) {
+                        ForEach(displayedEvents) { event in
+                            PhysicsChangeCard(
+                                parameter: event.changedParameter,
+                                headline: event.headline,
+                                explanation: event.physicsExplanation,
+                                icon: event.paramIcon,
+                                color: event.paramColor,
+                                timestamp: String(format: "t = %.2f s", event.time)
+                            )
+                        }
+                        
+                        if viewModel.changeEvents.count > 3 {
+                            Button(action: {
+                                withAnimation {
+                                    showAllChanges.toggle()
+                                }
+                            }) {
+                                HStack(spacing: 4) {
+                                    Text(showAllChanges ? "See Less" : "See All (\(viewModel.changeEvents.count))")
+                                    Image(systemName: showAllChanges ? "chevron.up" : "chevron.down")
+                                }
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundStyle(AppTheme.primaryAccent)
+                            }
+                            .padding(.vertical, 4)
+                        }
                     }
                 }
 

@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct KinetiX_AppApp: App {
+    @State private var isSplashActive = true
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if isSplashActive {
+                SplashView(isActive: $isSplashActive)
+            } else {
+                ContentView()
+            }
         }
     }
 }

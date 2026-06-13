@@ -153,6 +153,7 @@ class EscapeVelocityViewModel {
 
 
     var orbitalState: OrbitalState = .stable
+    var selectedGraph: EscapeVelocityGraphType = .altitude
     var changeEvents: [OrbitChangeEvent] = []
     var hasReachedPlanet: Bool = false
     var hasEscaped: Bool = false

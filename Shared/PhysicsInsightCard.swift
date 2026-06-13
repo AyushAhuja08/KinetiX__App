@@ -7,37 +7,40 @@ struct PhysicsInsightCard: View {
     let color: Color
     let explanation: String
     let formula: String?
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let isRegular = horizontalSizeClass == .regular
+        VStack(alignment: .leading, spacing: isRegular ? 14 : 8) {
             HStack(spacing: 8) {
                 Image(systemName: icon)
-                    .font(.title3)
+                    .font(isRegular ? .title2 : .title3)
                     .foregroundStyle(color)
-                    .frame(width: 28, height: 28)
+                    .frame(width: isRegular ? 34 : 28, height: isRegular ? 34 : 28)
 
                 Text(title)
-                    .font(.subheadline)
+                    .font(isRegular ? .body : .subheadline)
                     .fontWeight(.semibold)
                     .foregroundStyle(.primary)
             }
 
             Text(explanation)
-                .font(.caption)
+                .font(isRegular ? .subheadline : .caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+                .lineSpacing(isRegular ? 4 : 2)
 
             if let formula = formula {
                 Text(formula)
-                    .font(.system(.caption, design: .monospaced))
+                    .font(.system(isRegular ? .subheadline : .caption, design: .monospaced))
                     .foregroundStyle(color.opacity(0.8))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, isRegular ? 12 : 8)
+                    .padding(.vertical, isRegular ? 6 : 4)
                     .background(color.opacity(0.1))
                     .clipShape(RoundedRectangle(cornerRadius: 6))
             }
         }
-        .padding(12)
+        .padding(isRegular ? 16 : 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12)

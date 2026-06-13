@@ -12,17 +12,19 @@ struct EducationalSlider: View {
     let explanation: (Double) -> String
 
     @State private var showingExplanation = false
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let isRegular = horizontalSizeClass == .regular
+        VStack(alignment: .leading, spacing: isRegular ? 12 : 8) {
             HStack {
                 HStack(spacing: 6) {
                     Image(systemName: icon)
-                        .font(.subheadline)
+                        .font(isRegular ? .body : .subheadline)
                         .foregroundStyle(color)
 
                     Text(label)
-                        .font(.subheadline)
+                        .font(isRegular ? .body : .subheadline)
                         .fontWeight(.medium)
                 }
 
@@ -30,17 +32,17 @@ struct EducationalSlider: View {
 
                 HStack(spacing: 4) {
                     Text(String(format: "%.1f", value.wrappedValue))
-                        .font(.subheadline)
+                        .font(isRegular ? .body : .subheadline)
                         .foregroundStyle(color)
                         .fontWeight(.semibold)
                     Text(unit)
-                        .font(.caption)
+                        .font(isRegular ? .subheadline : .caption)
                         .foregroundStyle(.secondary)
                 }
 
                 Button(action: { withAnimation(.spring(response: 0.3)) { showingExplanation.toggle() } }) {
                     Image(systemName: showingExplanation ? "questionmark.circle.fill" : "questionmark.circle")
-                        .font(.subheadline)
+                        .font(isRegular ? .body : .subheadline)
                         .foregroundStyle(color)
                 }
             }
@@ -56,21 +58,21 @@ struct EducationalSlider: View {
             if showingExplanation {
                 HStack(alignment: .top, spacing: 6) {
                     Image(systemName: "info.circle.fill")
-                        .font(.caption)
+                        .font(isRegular ? .subheadline : .caption)
                         .foregroundStyle(color.opacity(0.7))
                     Text(explanation(value.wrappedValue))
-                        .font(.caption)
+                        .font(isRegular ? .subheadline : .caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(8)
+                .padding(isRegular ? 12 : 8)
                 .background(color.opacity(0.08))
                 .clipShape(RoundedRectangle(cornerRadius: 6))
                 .transition(.scale.combined(with: .opacity))
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
+        .padding(.vertical, isRegular ? 12 : 8)
+        .padding(.horizontal, isRegular ? 16 : 12)
         .background(Color(.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }

@@ -19,9 +19,10 @@ struct TitledCard<Content: View>: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             content()
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(AppTheme.cardBackground)

@@ -116,10 +116,30 @@ extension EscapeVelocityViewModel {
     }
 
     var graphAccessibilityLabel: String {
-        "Speed versus escape velocity comparison for \(selectedBody.rawValue). "
-        + "Your speed: \(String(format: "%.2f", bodySpeed)) km/s. "
-        + "Escape velocity: \(String(format: "%.1f", surfaceEscapeVelocity)) km/s. "
-        + stateDescription + ". " + currentInsight
+        let name: String
+        let currentValue: String
+        let trend: String
+
+        switch selectedGraph {
+        case .altitude:
+            name = "Altitude–Time graph"
+            currentValue = String(format: "Current altitude %.0f km", altitude)
+            trend = orbitalState == .escaping ? "spiraling outward indefinitely as the body escapes"
+                  : orbitalState == .decaying ? "decaying down to surface"
+                  :                             "stable"
+        case .velocity:
+            name = "Velocity–Time graph"
+            currentValue = String(format: "Current velocity %.2f km/s", bodySpeed)
+            trend = "approaching the escape speed of \(String(format: "%.1f", surfaceEscapeVelocity)) km/s"
+        case .distance:
+            name = "Distance from Center–Time graph"
+            currentValue = String(format: "Current distance %.0f km", planetActualRadius + altitude)
+            trend = orbitalState == .escaping ? "increasing as it breaks free" : "decreasing"
+        }
+
+        let timeProgress = Int((currentTime / 10.0) * 100)
+        return "\(name). \(currentValue). \(trend). "
+             + "Time cursor is at \(String(format: "%.2f", currentTime)) seconds."
     }
 }
 
