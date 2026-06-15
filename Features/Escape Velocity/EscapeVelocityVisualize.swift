@@ -56,7 +56,7 @@ struct EscapeVelocityVisualizeView: View {
                             }
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 460)
+                        .frame(height: isRegular ? 460 : 390)
 
                         TitledCard(
                             title: "Graphs",
@@ -69,7 +69,7 @@ struct EscapeVelocityVisualizeView: View {
                                 .accessibilityHint("Double-tap to hear current speed vs escape velocity comparison.")
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 460)
+                        .frame(height: isRegular ? 460 : 390)
                     }
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -108,7 +108,7 @@ struct EscapeVelocityVisualizeView: View {
                                     }
                                 }
                             }
-                            .frame(width: 310, height: 390)
+                            .frame(width: 310, height: isRegular ? 460 : 390)
 
                             TitledCard(
                                 title: "Graphs",
@@ -120,7 +120,7 @@ struct EscapeVelocityVisualizeView: View {
                                     .accessibilityAddTraits(.updatesFrequently)
                                     .accessibilityHint("Double-tap to hear current speed vs escape velocity comparison.")
                             }
-                            .frame(width: 310, height: 390)
+                            .frame(width: 310, height: isRegular ? 460 : 390)
                         }
                         .padding(.horizontal, 16)
                     }

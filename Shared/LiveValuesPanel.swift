@@ -16,8 +16,9 @@ struct LiveValuesPanel: View {
 
     var body: some View {
         let isRegular = horizontalSizeClass == .regular
-        VStack(spacing: isRegular ? 16 : 10) {
-            ForEach(values) { item in
+        VStack(spacing: 0) {
+            ForEach(values.indices, id: \.self) { idx in
+                let item = values[idx]
                 HStack(spacing: 10) {
                     Image(systemName: item.icon)
                         .font(isRegular ? .title2 : .title3)
@@ -47,7 +48,12 @@ struct LiveValuesPanel: View {
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("\(item.label): \(item.value) \(item.unit)")
                 .accessibilityAddTraits(.updatesFrequently)
+                
+                if idx < values.count - 1 {
+                    Spacer(minLength: isRegular ? 12 : 8)
+                }
             }
         }
+        .frame(maxHeight: .infinity)
     }
 }

@@ -5,6 +5,7 @@ import SwiftUI
 struct OrbitalMechanicsVisualizeView: View {
     var viewModel: OrbitalMechanicsViewModel
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @State private var selectedGraphTab: String = "Total E"
 
     var body: some View {
         let isRegular = horizontalSizeClass == .regular
@@ -18,7 +19,7 @@ struct OrbitalMechanicsVisualizeView: View {
                     OrbitalSimulationPanel(viewModel: viewModel)
                 }
 
-                // Horizontal swipable row for parameters and active graph
+                // Horizontal swipable row for parameters and combined graphs
                 if isRegular {
                     HStack(alignment: .top, spacing: 16) {
                         TitledCard(
@@ -28,24 +29,42 @@ struct OrbitalMechanicsVisualizeView: View {
                             OrbitalControlsView(viewModel: viewModel)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 460)
+                        .frame(height: isRegular ? 460 : 390)
 
                         TitledCard(
-                            title: "Active Graph",
-                            description: "Switch between kinetic, potential, total energy, and orbital radius."
+                            title: "Graphs",
+                            description: "Switch between kinetic, potential, total energy, and orbital radius, or view the energy overview."
                         ) {
                             VStack(spacing: 12) {
-                                Picker("Graph", selection: Binding(get: { viewModel.selectedGraph }, set: { viewModel.selectedGraph = $0 })) {
-                                    ForEach(OrbitalGraphType.allCases, id: \.self) { Text($0.label).tag($0) }
+                                Picker("Graph", selection: $selectedGraphTab) {
+                                    Text("KE").tag("KE")
+                                    Text("PE").tag("PE")
+                                    Text("Total E").tag("Total E")
+                                    Text("Radius").tag("Radius")
+                                    Text("All").tag("All")
                                 }
                                 .pickerStyle(.segmented)
+                                .onChange(of: selectedGraphTab) { newValue in
+                                    switch newValue {
+                                    case "KE": viewModel.selectedGraph = .kineticEnergy
+                                    case "PE": viewModel.selectedGraph = .potentialEnergy
+                                    case "Total E": viewModel.selectedGraph = .totalEnergy
+                                    case "Radius": viewModel.selectedGraph = .radius
+                                    default: break
+                                    }
+                                }
                                 
-                                OrbitalGraphView(viewModel: viewModel)
-                                    .frame(height: 220)
+                                if selectedGraphTab == "All" {
+                                    OrbitalAllEnergyGraph(viewModel: viewModel)
+                                        .frame(height: 220)
+                                } else {
+                                    OrbitalGraphView(viewModel: viewModel)
+                                        .frame(height: 220)
+                                }
                             }
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 460)
+                        .frame(height: isRegular ? 460 : 390)
                     }
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -56,70 +75,41 @@ struct OrbitalMechanicsVisualizeView: View {
                             ) {
                                 OrbitalControlsView(viewModel: viewModel)
                             }
-                            .frame(width: 310, height: 390)
+                            .frame(width: 310, height: isRegular ? 460 : 390)
 
                             TitledCard(
-                                title: "Active Graph",
-                                description: "Switch between kinetic, potential, total energy, and orbital radius."
+                                title: "Graphs",
+                                description: "Switch between kinetic, potential, total energy, and orbital radius, or view the energy overview."
                             ) {
                                 VStack(spacing: 12) {
-                                    Picker("Graph", selection: Binding(get: { viewModel.selectedGraph }, set: { viewModel.selectedGraph = $0 })) {
-                                        ForEach(OrbitalGraphType.allCases, id: \.self) { Text($0.label).tag($0) }
+                                    Picker("Graph", selection: $selectedGraphTab) {
+                                        Text("KE").tag("KE")
+                                        Text("PE").tag("PE")
+                                        Text("Total E").tag("Total E")
+                                        Text("Radius").tag("Radius")
+                                        Text("All").tag("All")
                                     }
                                     .pickerStyle(.segmented)
+                                    .onChange(of: selectedGraphTab) { newValue in
+                                        switch newValue {
+                                        case "KE": viewModel.selectedGraph = .kineticEnergy
+                                        case "PE": viewModel.selectedGraph = .potentialEnergy
+                                        case "Total E": viewModel.selectedGraph = .totalEnergy
+                                        case "Radius": viewModel.selectedGraph = .radius
+                                        default: break
+                                        }
+                                    }
                                     
-                                    OrbitalGraphView(viewModel: viewModel)
-                                        .frame(height: 220)
+                                    if selectedGraphTab == "All" {
+                                        OrbitalAllEnergyGraph(viewModel: viewModel)
+                                            .frame(height: 220)
+                                    } else {
+                                        OrbitalGraphView(viewModel: viewModel)
+                                            .frame(height: 220)
+                                    }
                                 }
                             }
-                            .frame(width: 310, height: 390)
-                        }
-                        .padding(.horizontal, 16)
-                    }
-                    .padding(.horizontal, -16) // Allows scrolling edge-to-edge
-                }
-
-                // Horizontal swipable row for energy overview, display toggles, and explanation
-                if isRegular {
-                    HStack(alignment: .top, spacing: 16) {
-                        TitledCard(
-                            title: "Energy Overview",
-                            description: "Shows kinetic, potential, and total energy over time."
-                        ) {
-                            OrbitalAllEnergyGraph(viewModel: viewModel)
-                                .frame(height: 220)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 460)
-
-                        TitledCard(
-                            title: "Display Options",
-                            description: "Turn on velocity, acceleration, or gravity vectors, orbit trail, and choose integrator."
-                        ) {
-                            OrbitalToggles(viewModel: viewModel)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 460)
-                    }
-                } else {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(alignment: .top, spacing: 16) {
-                            TitledCard(
-                                title: "Energy Overview",
-                                description: "Shows kinetic, potential, and total energy over time."
-                            ) {
-                                OrbitalAllEnergyGraph(viewModel: viewModel)
-                                    .frame(height: 220)
-                            }
-                            .frame(width: 310, height: 390)
-
-                            TitledCard(
-                                title: "Display Options",
-                                description: "Turn on velocity, acceleration, or gravity vectors, orbit trail, and choose integrator."
-                            ) {
-                                OrbitalToggles(viewModel: viewModel)
-                            }
-                            .frame(width: 310, height: 390)
+                            .frame(width: 310, height: isRegular ? 460 : 390)
                         }
                         .padding(.horizontal, 16)
                     }
@@ -130,6 +120,14 @@ struct OrbitalMechanicsVisualizeView: View {
             .padding(.vertical, 12)
         }
         .background(AppTheme.background.ignoresSafeArea())
+        .onAppear {
+            switch viewModel.selectedGraph {
+            case .kineticEnergy: selectedGraphTab = "KE"
+            case .potentialEnergy: selectedGraphTab = "PE"
+            case .totalEnergy: selectedGraphTab = "Total E"
+            case .radius: selectedGraphTab = "Radius"
+            }
+        }
     }
 }
 
@@ -149,6 +147,21 @@ struct OrbitalSimulationPanel: View {
 
             OrbitalPlaybackControls(viewModel: viewModel)
                 .padding(.horizontal)
+            
+            Divider()
+                .background(AppTheme.tertiaryText.opacity(0.3))
+                .padding(.horizontal)
+            
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Display Options")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(AppTheme.primaryText)
+                
+                OrbitalToggles(viewModel: viewModel)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 4)
         }
     }
 }

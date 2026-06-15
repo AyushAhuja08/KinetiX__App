@@ -30,7 +30,7 @@ struct ProjectileMotionVisualizeView: View {
                             LiveValuesPanel(values: viewModel.liveValuesData)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 460)
+                        .frame(height: isRegular ? 460 : 390)
 
                         TitledCard(
                             title: "What’s Happening?",
@@ -46,7 +46,7 @@ struct ProjectileMotionVisualizeView: View {
                             )
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 460)
+                        .frame(height: isRegular ? 460 : 390)
                     }
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -57,7 +57,7 @@ struct ProjectileMotionVisualizeView: View {
                             ) {
                                 LiveValuesPanel(values: viewModel.liveValuesData)
                             }
-                            .frame(width: 310, height: 390)
+                            .frame(width: 310, height: isRegular ? 460 : 390)
 
                             TitledCard(
                                 title: "What’s Happening?",
@@ -72,7 +72,7 @@ struct ProjectileMotionVisualizeView: View {
                                     formula: insight.formula
                                 )
                             }
-                            .frame(width: 310, height: 390)
+                            .frame(width: 310, height: isRegular ? 460 : 390)
                         }
                         .padding(.horizontal, 16)
                     }
@@ -139,7 +139,7 @@ struct ProjectileMotionVisualizeView: View {
                             }
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 460)
+                        .frame(height: isRegular ? 460 : 390)
 
                         TitledCard(
                             title: "Adjust Parameters",
@@ -148,7 +148,7 @@ struct ProjectileMotionVisualizeView: View {
                             EnhancedProjectileControlsView(viewModel: viewModel)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 460)
+                        .frame(height: isRegular ? 460 : 390)
                     }
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -210,7 +210,7 @@ struct ProjectileMotionVisualizeView: View {
                                     }
                                 }
                             }
-                            .frame(width: 310, height: 390)
+                            .frame(width: 310, height: isRegular ? 460 : 390)
 
                             TitledCard(
                                 title: "Adjust Parameters",
@@ -218,7 +218,7 @@ struct ProjectileMotionVisualizeView: View {
                             ) {
                                 EnhancedProjectileControlsView(viewModel: viewModel)
                             }
-                            .frame(width: 310, height: 390)
+                            .frame(width: 310, height: isRegular ? 460 : 390)
                         }
                         .padding(.horizontal, 16)
                     }

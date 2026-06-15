@@ -30,6 +30,8 @@ struct PhysicsInsightCard: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(isRegular ? 4 : 2)
 
+            Spacer(minLength: 0)
+
             if let formula = formula {
                 Text(formula)
                     .font(.system(isRegular ? .subheadline : .caption, design: .monospaced))
@@ -41,7 +43,7 @@ struct PhysicsInsightCard: View {
             }
         }
         .padding(isRegular ? 16 : 12)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(AppTheme.cardBackground)

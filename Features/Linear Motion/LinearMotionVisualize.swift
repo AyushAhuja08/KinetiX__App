@@ -21,7 +21,7 @@ struct LinearMotionVisualizeView: View {
                         .frame(height: 180)
                 }
 
-                // Horizontal swipable row for Live Values and What's Happening
+                // Live Values and What's Happening
                 if isRegular {
                     HStack(alignment: .top, spacing: 16) {
                         TitledCard(
@@ -306,4 +306,3 @@ struct LinearMotionSimulationView: View {
         }
     }
 }
-
