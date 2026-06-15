@@ -20,7 +20,7 @@ struct EscapeVelocityVisualizeView: View {
 
                 // Horizontal swipable row for secondary cards
                 if isRegular {
-                    HStack(alignment: .top, spacing: 16) {
+                    HStack(alignment: .center, spacing: 16) {
                         TitledCard(
                             title: "Speed vs Escape Velocity",
                             description: "Compare your current speed to the escape velocity for the selected body. If your speed is above escape velocity, the object will leave the gravitational pull."
@@ -28,7 +28,6 @@ struct EscapeVelocityVisualizeView: View {
                             EscapeVelocitySummaryView(viewModel: viewModel)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: isRegular ? 460 : 390)
 
                         TitledCard(
                             title: "Graphs",
@@ -41,18 +40,18 @@ struct EscapeVelocityVisualizeView: View {
                                 .accessibilityHint("Double-tap to hear current speed vs escape velocity comparison.")
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: isRegular ? 460 : 390)
                     }
+                    .fixedSize(horizontal: false, vertical: true)
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(alignment: .top, spacing: 16) {
+                        HStack(alignment: .center, spacing: 16) {
                             TitledCard(
                                 title: "Speed vs Escape Velocity",
                                 description: "Compare your current speed to the escape velocity for the selected body. If your speed is above escape velocity, the object will leave the gravitational pull."
                             ) {
                                 EscapeVelocitySummaryView(viewModel: viewModel)
                             }
-                            .frame(width: 310, height: isRegular ? 460 : 390)
+                            .frame(width: 310)
 
                             TitledCard(
                                 title: "Graphs",
@@ -64,8 +63,9 @@ struct EscapeVelocityVisualizeView: View {
                                     .accessibilityAddTraits(.updatesFrequently)
                                     .accessibilityHint("Double-tap to hear current speed vs escape velocity comparison.")
                             }
-                            .frame(width: 310, height: isRegular ? 460 : 390)
+                            .frame(width: 310)
                         }
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 16)
                     }
                     .padding(.horizontal, -16) // Allows scrolling edge-to-edge

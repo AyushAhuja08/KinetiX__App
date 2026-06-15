@@ -21,7 +21,7 @@ struct OrbitalMechanicsVisualizeView: View {
 
                 // Horizontal swipable row for parameters and combined graphs
                 if isRegular {
-                    HStack(alignment: .top, spacing: 16) {
+                    HStack(alignment: .center, spacing: 16) {
                         TitledCard(
                             title: "Adjust Parameters",
                             description: "Adjust launch speed, angle, altitude, and planet mass to see how the orbit changes."
@@ -29,7 +29,6 @@ struct OrbitalMechanicsVisualizeView: View {
                             OrbitalControlsView(viewModel: viewModel)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: isRegular ? 460 : 390)
 
                         TitledCard(
                             title: "Graphs",
@@ -64,18 +63,18 @@ struct OrbitalMechanicsVisualizeView: View {
                             }
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: isRegular ? 460 : 390)
                     }
+                    .fixedSize(horizontal: false, vertical: true)
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(alignment: .top, spacing: 16) {
+                        HStack(alignment: .center, spacing: 16) {
                             TitledCard(
                                 title: "Adjust Parameters",
                                 description: "Adjust launch speed, angle, altitude, and planet mass to see how the orbit changes."
                             ) {
                                 OrbitalControlsView(viewModel: viewModel)
                             }
-                            .frame(width: 310, height: isRegular ? 460 : 390)
+                            .frame(width: 310)
 
                             TitledCard(
                                 title: "Graphs",
@@ -109,8 +108,9 @@ struct OrbitalMechanicsVisualizeView: View {
                                     }
                                 }
                             }
-                            .frame(width: 310, height: isRegular ? 460 : 390)
+                            .frame(width: 310)
                         }
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 16)
                     }
                     .padding(.horizontal, -16) // Allows scrolling edge-to-edge

@@ -22,7 +22,7 @@ struct ProjectileMotionVisualizeView: View {
 
                 // Horizontal swipable row for Live Values and What's Happening
                 if isRegular {
-                    HStack(alignment: .top, spacing: 16) {
+                    HStack(alignment: .center, spacing: 16) {
                         TitledCard(
                             title: "Live Values",
                             description: "Current horizontal and vertical position, velocity components, and speed in real time."
@@ -30,7 +30,6 @@ struct ProjectileMotionVisualizeView: View {
                             LiveValuesPanel(values: viewModel.liveValuesData)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: isRegular ? 460 : 390)
 
                         TitledCard(
                             title: "What’s Happening?",
@@ -46,18 +45,18 @@ struct ProjectileMotionVisualizeView: View {
                             )
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: isRegular ? 460 : 390)
                     }
+                    .fixedSize(horizontal: false, vertical: true)
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(alignment: .top, spacing: 16) {
+                        HStack(alignment: .center, spacing: 16) {
                             TitledCard(
                                 title: "Live Values",
                                 description: "Current horizontal and vertical position, velocity components, and speed in real time."
                             ) {
                                 LiveValuesPanel(values: viewModel.liveValuesData)
                             }
-                            .frame(width: 310, height: isRegular ? 460 : 390)
+                            .frame(width: 310)
 
                             TitledCard(
                                 title: "What’s Happening?",
@@ -72,8 +71,9 @@ struct ProjectileMotionVisualizeView: View {
                                     formula: insight.formula
                                 )
                             }
-                            .frame(width: 310, height: isRegular ? 460 : 390)
+                            .frame(width: 310)
                         }
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 16)
                     }
                     .padding(.horizontal, -16) // Allows scrolling edge-to-edge
@@ -81,7 +81,7 @@ struct ProjectileMotionVisualizeView: View {
 
                 // Horizontal swipable row for Graphs and Sliders
                 if isRegular {
-                    HStack(alignment: .top, spacing: 16) {
+                    HStack(alignment: .center, spacing: 16) {
                         TitledCard(
                             title: "Graphs",
                             description: "Switch between X vs Time (horizontal position) and Y vs Time (vertical position). The graph updates as the simulation runs."
@@ -139,7 +139,6 @@ struct ProjectileMotionVisualizeView: View {
                             }
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: isRegular ? 460 : 390)
 
                         TitledCard(
                             title: "Adjust Parameters",
@@ -148,11 +147,11 @@ struct ProjectileMotionVisualizeView: View {
                             EnhancedProjectileControlsView(viewModel: viewModel)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: isRegular ? 460 : 390)
                     }
+                    .fixedSize(horizontal: false, vertical: true)
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(alignment: .top, spacing: 16) {
+                        HStack(alignment: .center, spacing: 16) {
                             TitledCard(
                                 title: "Graphs",
                                 description: "Switch between X vs Time (horizontal position) and Y vs Time (vertical position). The graph updates as the simulation runs."
@@ -210,7 +209,7 @@ struct ProjectileMotionVisualizeView: View {
                                     }
                                 }
                             }
-                            .frame(width: 310, height: isRegular ? 460 : 390)
+                            .frame(width: 310)
 
                             TitledCard(
                                 title: "Adjust Parameters",
@@ -218,8 +217,9 @@ struct ProjectileMotionVisualizeView: View {
                             ) {
                                 EnhancedProjectileControlsView(viewModel: viewModel)
                             }
-                            .frame(width: 310, height: isRegular ? 460 : 390)
+                            .frame(width: 310)
                         }
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 16)
                     }
                     .padding(.horizontal, -16) // Allows scrolling edge-to-edge

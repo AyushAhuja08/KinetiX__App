@@ -23,7 +23,7 @@ struct LinearMotionVisualizeView: View {
 
                 // Live Values and What's Happening
                 if isRegular {
-                    HStack(alignment: .top, spacing: 16) {
+                    HStack(alignment: .center, spacing: 16) {
                         TitledCard(
                             title: "Live Values",
                             description: "Current distance, velocity, and acceleration in real time as the simulation runs."
@@ -31,7 +31,6 @@ struct LinearMotionVisualizeView: View {
                             LiveValuesPanel(values: viewModel.liveValuesData)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 460)
 
                         TitledCard(
                             title: "What’s Happening?",
@@ -47,18 +46,18 @@ struct LinearMotionVisualizeView: View {
                             )
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 460)
                     }
+                    .fixedSize(horizontal: false, vertical: true)
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(alignment: .top, spacing: 16) {
+                        HStack(alignment: .center, spacing: 16) {
                             TitledCard(
                                 title: "Live Values",
                                 description: "Current distance, velocity, and acceleration in real time as the simulation runs."
                             ) {
                                 LiveValuesPanel(values: viewModel.liveValuesData)
                             }
-                            .frame(width: 310, height: 390)
+                            .frame(width: 310)
 
                             TitledCard(
                                 title: "What’s Happening?",
@@ -73,8 +72,9 @@ struct LinearMotionVisualizeView: View {
                                     formula: insight.formula
                                 )
                             }
-                            .frame(width: 310, height: 390)
+                            .frame(width: 310)
                         }
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 16)
                     }
                     .padding(.horizontal, -16) // Allows scrolling edge-to-edge
@@ -82,7 +82,7 @@ struct LinearMotionVisualizeView: View {
 
                 // Horizontal swipable row for Graphs and Sliders
                 if isRegular {
-                    HStack(alignment: .top, spacing: 16) {
+                    HStack(alignment: .center, spacing: 16) {
                         TitledCard(
                             title: "Graphs",
                             description: "See how distance, velocity, and acceleration change over time. The graph updates as the simulation runs."
@@ -90,7 +90,6 @@ struct LinearMotionVisualizeView: View {
                             LinearFocusModeGraphView(viewModel: viewModel)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 460)
 
                         TitledCard(
                             title: "Adjust Parameters",
@@ -99,18 +98,18 @@ struct LinearMotionVisualizeView: View {
                             EnhancedLinearControlsView(viewModel: viewModel)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 460)
                     }
+                    .fixedSize(horizontal: false, vertical: true)
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(alignment: .top, spacing: 16) {
+                        HStack(alignment: .center, spacing: 16) {
                             TitledCard(
                                 title: "Graphs",
                                 description: "See how distance, velocity, and acceleration change over time. The graph updates as the simulation runs."
                             ) {
                                 LinearFocusModeGraphView(viewModel: viewModel)
                             }
-                            .frame(width: 310, height: 390)
+                            .frame(width: 310)
 
                             TitledCard(
                                 title: "Adjust Parameters",
@@ -118,8 +117,9 @@ struct LinearMotionVisualizeView: View {
                             ) {
                                 EnhancedLinearControlsView(viewModel: viewModel)
                             }
-                            .frame(width: 310, height: 390)
+                            .frame(width: 310)
                         }
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 16)
                     }
                     .padding(.horizontal, -16) // Allows scrolling edge-to-edge
