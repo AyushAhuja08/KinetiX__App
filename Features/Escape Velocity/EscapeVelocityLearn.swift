@@ -1,511 +1,687 @@
-
-
 import SwiftUI
 
 struct EscapeVelocityLearnView: View {
     var viewModel: EscapeVelocityViewModel
-    @State private var showAllChanges = false
+    @State private var expandedSection: Int? = 0
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                //Basic Information
+
                 KeyInsightBanner(
                     insight: "Escape velocity isn't about going up—it's about having enough energy to reach infinity!",
                     icon: "star.fill",
                     color: .blue
                 )
 
+                // Section 0: Your Changes
+                EscapeLearnSection(
+                    number: 0,
+                    title: viewModel.changeEvents.isEmpty ? "Your Changes (none yet)" : "Your Changes (\(viewModel.changeEvents.count))",
+                    icon: "pencil.and.list.clipboard",
+                    color: .yellow,
+                    badge: viewModel.changeEvents.isEmpty ? nil : "\(viewModel.changeEvents.count)",
+                    expandedSection: $expandedSection
+                ) {
+                    if viewModel.changeEvents.isEmpty {
+                        VStack(spacing: 12) {
+                            Image(systemName: "hand.point.up.left")
+                                .font(.largeTitle)
+                                .foregroundStyle(AppTheme.tertiaryText)
+                            Text("Adjust the body speed slider or switch between planets on the Visualize tab. Each change will appear here with a full physics explanation.")
+                                .font(.subheadline)
+                                .foregroundStyle(AppTheme.secondaryText)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                    } else {
+                        VStack(spacing: 10) {
+                            ForEach(viewModel.changeEvents.reversed()) { event in
+                                EscapeChangeCard(change: event)
+                            }
 
-                ConceptExplanationCard(
+                            Button(action: {
+                                withAnimation { viewModel.changeEvents.removeAll() }
+                            }) {
+                                Label("Clear History", systemImage: "trash")
+                                    .font(.caption)
+                                    .foregroundStyle(.red.opacity(0.8))
+                            }
+                            .padding(.top, 4)
+                        }
+                    }
+                }
+
+                // Section 1: Live Simulation State
+                EscapeLearnSection(
+                    number: 1,
+                    title: "Live Simulation State",
+                    icon: "waveform.path.ecg",
+                    color: .cyan,
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    EscapeLiveCard(viewModel: viewModel)
+                }
+
+                // Section 2: What is Escape Velocity?
+                EscapeLearnSection(
+                    number: 2,
                     title: "What is Escape Velocity?",
                     icon: "arrow.up.circle.fill",
                     color: .indigo,
-                    explanation: "Escape velocity is the minimum speed needed to break free from a planet's gravitational pull completely—to reach infinite distance. It's not about direction; you could theoretically escape by launching at any angle, even sideways! What matters is having enough kinetic energy to overcome all the gravitational potential energy binding you to the planet.",
-                    expandablePoints: [
-                        "It's determined by energy: KE (kinetic) must equal |PE| (gravitational potential)",
-                        "Formula: v_escape = √(2GM/r), where M is planet mass and r is distance from center",
-                        "Larger planets (more mass) need higher escape velocity",
-                        "Higher altitudes need lower escape velocity (you're already partway out!)",
-                        "Direction doesn't matter—it's purely about speed and energy"
-                    ]
-                )
-
-
-                LearnHeroCard(
-                    title: "Live Values",
-                    icon: "waveform.path.ecg",
-                    color: .blue
+                    badge: nil,
+                    expandedSection: $expandedSection
                 ) {
-                    VStack(spacing: 12) {
-                        LearnValueRow(label: "Current Planet", value: viewModel.selectedBody.rawValue, icon: viewModel.selectedBody.icon, color: viewModel.selectedBody.color)
-                        LearnValueRow(label: "Body Speed", value: String(format: "%.2f km/s", viewModel.bodySpeed), icon: "speedometer", color: .blue)
-                        LearnValueRow(label: "Surface Escape Velocity", value: String(format: "%.1f km/s", viewModel.surfaceEscapeVelocity), icon: "arrow.up.circle.fill", color: .red)
-                        LearnValueRow(label: "Escape Vel. at Altitude", value: String(format: "%.2f km/s", viewModel.currentEscapeVelocity), icon: "arrow.up.circle", color: .orange)
-                        LearnValueRow(label: "Altitude Above Surface", value: String(format: "%.0f km", viewModel.altitude), icon: "ruler", color: .green)
-                        LearnValueRow(label: "Current State", value: viewModel.stateDescription, icon: statusIcon, color: viewModel.stateColor)
-                    }
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("Escape velocity is the minimum speed needed to break free from a planet's gravitational pull completely—to reach infinite distance. It's not about direction; you could theoretically escape by launching at any angle, even sideways! What matters is having enough kinetic energy to overcome all the gravitational potential energy binding you to the planet.")
+                            .font(.body).foregroundStyle(AppTheme.primaryText)
 
-                    Text("Current orbital parameters and velocities")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 4)
-                }
+                        EscapeCallout(text: "Formula: v_escape = √(2GM / r)", color: .indigo)
 
+                        Text("Key concepts determining escape velocity:")
+                            .font(.body).foregroundStyle(AppTheme.primaryText)
 
-                LearnCurrentStateCard(
-                    title: "What's Happening Now",
-                    icon: "chart.line.uptrend.xyaxis",
-                    color: .purple
-                ) {
-                    VStack(spacing: 8) {
-                        InfoRow(
-                            label: "Speed / Escape Velocity",
-                            value: String(format: "%.1f%%", (viewModel.bodySpeed / viewModel.surfaceEscapeVelocity) * 100)
-                        )
-                        InfoRow(
-                            label: "Altitude",
-                            value: String(format: "%.0f km above %@", viewModel.altitude, viewModel.selectedBody.rawValue)
-                        )
-
-                        Divider()
-                            .padding(.vertical, 4)
-
-                        Text(currentStateExplanation)
-                            .font(.subheadline)
-                            .foregroundStyle(.primary.opacity(0.85))
-                            .fixedSize(horizontal: false, vertical: true)
+                        EscapeBullet(color: .green, text: "Energy bound: Kinetic energy (KE) must equal the magnitude of potential energy (|PE|) at launch.")
+                        EscapeBullet(color: .orange, text: "Mass M & Radius r: Larger planets (more mass) need higher escape velocity; larger radius reduces surface gravity and escape speed.")
+                        EscapeBullet(color: .red, text: "Altitude: Higher altitudes need lower escape velocity because you are already partway out of the gravity well.")
+                        EscapeBullet(color: .purple, text: "Direction independence: Direction doesn't matter (excluding air resistance or planetary blockages)—only speed and energy determine escape.")
                     }
                 }
 
-
-                PhysicsChangesSection(
-                    title: viewModel.changeEvents.isEmpty ? "Your Changes (none yet)" : "Your Changes (\(viewModel.changeEvents.count))",
-                    badge: viewModel.changeEvents.isEmpty ? nil : "\(viewModel.changeEvents.count)",
-                    isEmpty: viewModel.changeEvents.isEmpty,
-                    emptyPrompt: "Adjust the body speed slider or switch between planets on the Visualize tab. Each change will appear here with a full physics explanation.",
-                    onClear: { viewModel.changeEvents.removeAll() }
-                ) {
-                    let displayedEvents = showAllChanges ? viewModel.changeEvents.reversed() : Array(viewModel.changeEvents.reversed().prefix(3))
-                    
-                    VStack(spacing: 10) {
-                        ForEach(displayedEvents) { event in
-                            PhysicsChangeCard(
-                                parameter: event.changedParameter,
-                                headline: event.headline,
-                                explanation: event.physicsExplanation,
-                                icon: event.paramIcon,
-                                color: event.paramColor,
-                                timestamp: String(format: "t = %.2f s", event.time)
-                            )
-                        }
-                        
-                        if viewModel.changeEvents.count > 3 {
-                            Button(action: {
-                                withAnimation {
-                                    showAllChanges.toggle()
-                                }
-                            }) {
-                                HStack(spacing: 4) {
-                                    Text(showAllChanges ? "See Less" : "See All (\(viewModel.changeEvents.count))")
-                                    Image(systemName: showAllChanges ? "chevron.up" : "chevron.down")
-                                }
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundStyle(AppTheme.primaryAccent)
-                            }
-                            .padding(.vertical, 4)
-                        }
-                    }
-                }
-
-
-                LearnStateComparisonCard(
+                // Section 3: What Happens at Different Speeds
+                EscapeLearnSection(
+                    number: 3,
                     title: "What Happens at Different Speeds",
                     icon: "gauge.with.dots.needle.67percent",
                     color: .cyan,
-                    states: [
-                        (
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("The relation of speed to escape velocity determines the trajectory's behavior:")
+                            .font(.body).foregroundStyle(AppTheme.primaryText)
+
+                        EscapeBehaviorRow(
                             icon: "arrow.up.circle.fill",
-                            title: "Speed ≥ Escape Velocity (≥\(String(format: "%.1f", viewModel.surfaceEscapeVelocity)) km/s)",
-                            behavior: "Body escapes \(viewModel.selectedBody.rawValue)'s gravity forever",
-                            reason: "Kinetic energy exceeds gravitational binding energy - reaches infinity",
+                            title: "Speed ≥ Escape Velocity",
+                            behavior: "Body escapes gravity forever",
+                            reason: "Kinetic energy meets or exceeds gravitational binding energy - reaches infinity.",
                             color: .blue
-                        ),
-                        (
+                        )
+
+                        EscapeBehaviorRow(
                             icon: "arrow.down.circle.fill",
-                            title: "Speed < Escape Velocity (<\(String(format: "%.1f", viewModel.surfaceEscapeVelocity)) km/s)",
-                            behavior: "Body cannot escape - falls back to \(viewModel.selectedBody.rawValue)",
-                            reason: "Not enough energy to overcome gravity - trajectory curves back",
+                            title: "Speed < Escape Velocity",
+                            behavior: "Body cannot escape",
+                            reason: "Not enough energy to overcome gravity - trajectory curves back.",
                             color: .orange
                         )
-                    ]
-                )
+                    }
+                }
 
-
-                LearnPlanetExamplesCard(
-                    title: "Real-World Examples",
-                    icon: "globe.americas.fill",
-                    color: .orange,
-                    planetExamples: [
-                        (
-                            planet: "Earth (11.2 km/s)",
-                            color: .blue,
-                            examples: [
-                                ("airplane.departure", "Apollo missions: Reached 11.2 km/s to escape Earth's gravity"),
-                                ("sparkles", "Voyager spacecraft: Launched at escape velocity, now in interstellar space")
-                            ]
-                        ),
-                        (
-                            planet: "Moon (2.4 km/s)",
-                            color: .gray,
-                            examples: [
-                                ("moon.stars", "Much easier to escape - only 21% of Earth's escape velocity!"),
-                                ("figure.walk", "Lunar Module needed far less fuel to leave Moon than Earth")
-                            ]
-                        ),
-                        (
-                            planet: "Mars (5.0 km/s)",
-                            color: .red,
-                            examples: [
-                                ("figure.walk", "45% of Earth's escape velocity - easier to launch from Mars"),
-                                ("sparkles", "Future Mars missions will need less fuel to return to Earth")
-                            ]
-                        )
-                    ]
-                )
-
-
-                StepByStepCard(
-                    title: "Energy Transformation: What's Really Happening",
+                // Section 4: Energy Transformation
+                EscapeLearnSection(
+                    number: 4,
+                    title: "Energy Transformation — Deep Dive",
                     icon: "bolt.fill",
                     color: .yellow,
-                    steps: [
-                        (phase: "At Surface (Launch)", description: "Maximum kinetic energy (KE = ½mv²). Gravitational PE is large and negative. Total energy determines fate."),
-                        (phase: "Rising Up", description: "KE converts to PE as object climbs. Speed decreases, but PE becomes less negative (increases)."),
-                        (phase: "At Escape Speed", description: "Total energy = 0. KE + PE = 0 exactly. Object has just enough energy to reach infinity with zero speed remaining."),
-                        (phase: "Below Escape Speed", description: "Total energy < 0. Object will run out of KE before escaping. Gravity pulls it back down."),
-                        (phase: "Above Escape Speed", description: "Total energy > 0. Object escapes with leftover KE. It will still have speed even at infinite distance!")
-                    ]
-                )
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("As an object climbs, its kinetic energy converts to potential energy, but total energy remains constant:")
+                            .font(.body).foregroundStyle(AppTheme.primaryText)
 
+                        EscapeStepCard(steps: [
+                            ("1", "At Surface (Launch)", "Maximum kinetic energy (KE = ½mv²). Gravitational potential energy (PE) is large and negative. Total mechanical energy determines the object's fate."),
+                            ("2", "Rising Up", "KE converts to PE as the object climbs. Speed decreases, but PE becomes less negative (increases)."),
+                            ("3", "At Escape Speed", "Total energy = 0. KE + PE = 0 exactly. The object has just enough energy to reach infinity with zero speed remaining."),
+                            ("4", "Below Escape Speed", "Total energy < 0. The object will run out of KE before escaping. Gravity eventually pulls it back down."),
+                            ("5", "Above Escape Speed", "Total energy > 0. The object escapes with leftover KE. It will still have speed even at infinite distance!")
+                        ])
+                    }
+                }
 
-                ConceptExplanationCard(
-                    title: "Why Different Speeds Create Different Paths",
-                    icon: "circle.dotted.and.circle",
-                    color: .cyan,
-                    explanation: "Speed determines trajectory! Below escape velocity, you're gravitationally bound—your path curves back. At exactly escape velocity, you follow a parabolic escape trajectory reaching infinity with zero final speed. Above escape velocity, you follow a hyperbolic path and escape with speed to spare.",
-                    expandablePoints: [
-                        "Very low speed: Falls straight back (ballistic arc)",
-                        "Medium speed: Elliptical orbit around planet",
-                        "Circular orbit speed: √(GM/r) - stays at constant altitude",
-                        "Escape velocity: √(2GM/r) = √2 × orbital speed",
-                        "Hyperbolic trajectory: Exceeds escape velocity, escapes fast"
-                    ]
-                )
-
-
-                ComparisonTableCard(
+                // Section 5: Why Escape Velocities Differ
+                EscapeLearnSection(
+                    number: 5,
                     title: "Why Escape Velocities Differ",
                     icon: "globe.americas.fill",
                     color: .orange,
-                    headers: ["Body", "Escape Velocity", "Why?"],
-                    rows: [
-                        ["Earth", "11.2 km/s", "Large mass, medium radius"],
-                        ["Moon", "2.4 km/s", "Much smaller mass (~1/81 Earth)"],
-                        ["Mars", "5.0 km/s", "Smaller mass & radius than Earth"],
-                        ["Jupiter", "60 km/s", "Massive! 318× Earth's mass"],
-                        ["Sun", "618 km/s", "Enormous mass dominates system"]
-                    ]
-                )
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("Escape velocity is proportional to the square root of mass over radius, resulting in varying speeds for different celestial bodies:")
+                            .font(.body).foregroundStyle(AppTheme.primaryText)
 
+                        EscapeTable()
 
-                MisconceptionCard(
+                        Text("Black hole boundary: If a body shrinks to the point where its escape velocity equals the speed of light, it becomes a black hole. Not even light can escape!")
+                            .font(.subheadline).foregroundStyle(AppTheme.secondaryText)
+                    }
+                }
+
+                // Section 6: Trajectory Geometry
+                EscapeLearnSection(
+                    number: 6,
+                    title: "Trajectory Geometry",
+                    icon: "circle.dotted.and.circle",
+                    color: .teal,
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("Speed relative to escape velocity determines the geometric shape of the path:")
+                            .font(.body).foregroundStyle(AppTheme.primaryText)
+
+                        EscapeBullet(color: .red, text: "Very low speed: Ballistic arc (falls straight back).")
+                        EscapeBullet(color: .orange, text: "Orbit range: Elliptical or circular orbits (bound path).")
+                        EscapeBullet(color: .yellow, text: "Exactly escape velocity: Parabolic trajectory (escapes to infinity with zero final speed).")
+                        EscapeBullet(color: .green, text: "Above escape velocity: Hyperbolic trajectory (escapes with leftover speed).")
+                    }
+                }
+
+                // Section 7: Common Misconceptions
+                EscapeLearnSection(
+                    number: 7,
                     title: "Common Misconceptions",
                     icon: "exclamationmark.triangle.fill",
                     color: .red,
-                    misconceptions: [
-                        (
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        EscapeMisconceptionRow(
                             myth: "You must launch straight up to escape",
                             reality: "Direction doesn't matter! You can escape by launching horizontally if you have enough speed. Rockets launch at angles to efficiently combine altitude gain with horizontal acceleration."
-                        ),
-                        (
+                        )
+                        EscapeMisconceptionRow(
                             myth: "Heavier objects need more speed to escape",
                             reality: "Escape velocity is the same for all objects regardless of mass! A feather and a boulder need the same speed to escape Earth (ignoring air resistance)."
-                        ),
-                        (
+                        )
+                        EscapeMisconceptionRow(
                             myth: "At escape velocity, you stop at infinity",
                             reality: "At exactly escape velocity, you asymptotically approach zero speed at infinity. Above escape velocity, you still have speed left at infinity!"
                         )
-                    ]
-                )
+                    }
+                }
 
-
-                InteractiveQuestionCard(
+                // Section 8: Test Your Understanding
+                EscapeLearnSection(
+                    number: 8,
                     title: "Test Your Understanding",
                     icon: "questionmark.circle.fill",
                     color: .purple,
-                    questions: [
-                        QA(
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(spacing: 12) {
+                        EscapeQACard(
                             question: "Why is escape velocity from the Moon so much lower than from Earth?",
                             answer: "The Moon has much less mass (about 1/81 of Earth's) and a smaller radius. Since v_escape = √(2GM/r), lower mass means lower escape velocity. This made the Apollo lunar module's return trip much easier!"
-                        ),
-                        QA(
+                        )
+                        EscapeQACard(
                             question: "If you're already in orbit, how much faster must you go to escape?",
                             answer: "You need to increase your speed by a factor of √2 ≈ 1.41. Since v_escape = √2 × v_circular, you need about 41% more speed to escape from a circular orbit."
-                        ),
-                        QA(
+                        )
+                        EscapeQACard(
                             question: "Why does escape velocity decrease with altitude?",
                             answer: "As you rise, you're farther from the planet's center (larger r), and you've already climbed out of some gravitational potential well. Less energy needed to escape means lower escape velocity."
                         )
-                    ]
-                )
+                    }
+                }
 
+                // Section 9: Experiments to Try
+                EscapeLearnSection(
+                    number: 9,
+                    title: "Experiments to Try",
+                    icon: "flask.fill",
+                    color: .pink,
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        EscapeExperimentCard(
+                            title: "Earth Escape",
+                            steps: ["Set planet to Earth", "Set speed to exactly 11.2 km/s", "Press Play"],
+                            result: "Watch the body escape Earth's gravity, its trajectory curving away into deep space.",
+                            color: .cyan
+                        )
+                        EscapeExperimentCard(
+                            title: "Moon Escape",
+                            steps: ["Set planet to Moon", "Set speed to exactly 2.4 km/s", "Press Play"],
+                            result: "Watch it escape easily. The Moon's escape speed is only 21% of Earth's escape velocity!",
+                            color: .orange
+                        )
+                        EscapeExperimentCard(
+                            title: "Altitude Advantage",
+                            steps: ["Increase altitude to 2000 km", "Compare escape velocity here to surface escape velocity"],
+                            result: "Notice how escape velocity drops as altitude increases since you are already higher in the potential well.",
+                            color: .green
+                        )
+                    }
+                }
 
-                LearnTipCard(
-                    title: "Try This!",
-                    icon: "lightbulb.fill",
-                    color: .yellow,
-                    tips: [
-                        "Switch between Earth, Moon, and Mars to compare escape velocities",
-                        "Moon: Try 2.5 km/s to see it barely escape (much easier than Earth!)",
-                        "Earth: Set to 11.2 km/s - watch it barely escape",
-                        "Mars: Try 5.0 km/s - moderate escape velocity",
-                        "Watch both escape velocities: Surface (fixed) vs Current altitude (changes)",
-                        "Notice: Higher altitude = lower escape velocity needed",
-                        "Check Visualize tab's Focus mode to see graphs of altitude, velocity, and distance over time!"
-                    ]
-                )
+                Spacer(minLength: 40)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal)
+            .padding(.vertical)
         }
+        .background(AppTheme.background.ignoresSafeArea())
     }
+}
 
-    private var statusIcon: String {
-        switch viewModel.orbitalState {
-        case .stable: return "checkmark.circle.fill"
-        case .escaping: return "arrow.up.circle.fill"
-        case .decaying: return "arrow.down.circle.fill"
+// MARK: - Subviews
+
+struct EscapeChangeCard: View {
+    let change: OrbitChangeEvent
+    @State private var expanded = true
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: { withAnimation(.easeInOut(duration: 0.2)) { expanded.toggle() } }) {
+                HStack(spacing: 10) {
+                    ZStack {
+                        Circle().fill(change.paramColor.opacity(0.15)).frame(width: 32, height: 32)
+                        Image(systemName: change.paramIcon)
+                            .font(.caption).foregroundStyle(change.paramColor)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(change.changedParameter)
+                            .font(.caption2).fontWeight(.semibold)
+                            .foregroundStyle(change.paramColor)
+                        Text(change.headline)
+                            .font(.caption).foregroundStyle(AppTheme.primaryText)
+                            .lineLimit(2)
+                    }
+                    Spacer()
+                    Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                        .font(.caption2).foregroundStyle(AppTheme.tertiaryText)
+                }
+                .padding(10)
+            }
+
+            if expanded {
+                Divider().background(change.paramColor.opacity(0.2))
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(change.physicsExplanation)
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.primaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(10)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
+        .background(change.paramColor.opacity(0.05))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(change.paramColor.opacity(0.2), lineWidth: 1))
+        .animation(.easeInOut(duration: 0.2), value: expanded)
     }
+}
 
-    private var currentStateExplanation: String {
-        let planetName = viewModel.selectedBody.rawValue
-        let surfaceVel = viewModel.surfaceEscapeVelocity
+struct EscapeLiveCard: View {
+    var viewModel: EscapeVelocityViewModel
 
-        switch viewModel.orbitalState {
-        case .stable:
-            return "The body is moving at a stable velocity for this altitude. While this isn't about stable orbits in this simulation, at certain speeds objects can maintain orbits around \(planetName)."
-        case .escaping:
-            return String(format: "The body's speed (%.2f km/s) meets or exceeds %@'s surface escape velocity (%.1f km/s)! It has enough kinetic energy to completely overcome %@'s gravitational pull. The trajectory will continue outward indefinitely, spiraling away until it escapes to infinity and never returns.", viewModel.bodySpeed, planetName, surfaceVel, planetName)
-        case .decaying:
-            return String(format: "The body's speed (%.2f km/s) is below %@'s surface escape velocity (%.1f km/s). Without sufficient energy to escape %@'s gravitational field, the body's trajectory curves back. It will spiral inward, losing altitude continuously until it falls back to the surface.", viewModel.bodySpeed, planetName, surfaceVel, planetName)
-        }
-    }
-
-    private func stateText(for state: OrbitalState) -> String {
-        switch state {
-        case .stable: return "Stable Orbit"
-        case .escaping: return "Escaping to Infinity"
-        case .decaying: return "Decaying Orbit"
+    var body: some View {
+        VStack(spacing: 6) {
+            EscapeLiveRow(label: "Current Planet", value: viewModel.selectedBody.rawValue, color: viewModel.selectedBody.color)
+            EscapeLiveRow(label: "Body Speed", value: String(format: "%.2f km/s", viewModel.bodySpeed), color: .blue)
+            EscapeLiveRow(label: "Surface Escape Velocity", value: String(format: "%.1f km/s", viewModel.surfaceEscapeVelocity), color: .red)
+            EscapeLiveRow(label: "Escape Vel. at Altitude", value: String(format: "%.2f km/s", viewModel.currentEscapeVelocity), color: .orange)
+            EscapeLiveRow(label: "Altitude Above Surface", value: String(format: "%.0f km", viewModel.altitude), color: .green)
+            EscapeLiveRow(label: "Current State", value: viewModel.stateDescription, color: viewModel.stateColor)
         }
     }
 }
 
-struct LearnCurrentStateCard<Content: View>: View {
+struct EscapeLiveRow: View {
+    let label: String
+    let value: String
+    let color: Color
+
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.subheadline)
+                .foregroundStyle(AppTheme.secondaryText)
+            Spacer()
+            Text(value)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(color)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(AppTheme.surfaceBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+    }
+}
+
+struct EscapeLearnSection<Content: View>: View {
+    let number: Int
     let title: String
     let icon: String
     let color: Color
-    let content: Content
+    let badge: String?
+    @Binding var expandedSection: Int?
+    @ViewBuilder let content: () -> Content
 
-    init(title: String, icon: String, color: Color, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.icon = icon
-        self.color = color
-        self.content = content()
-    }
+    var isExpanded: Bool { expandedSection == number }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label(title, systemImage: icon)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(color)
-            content
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    expandedSection = isExpanded ? nil : number
+                }
+            }) {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle().fill(color.opacity(0.15)).frame(width: 34, height: 34)
+                        Image(systemName: icon)
+                            .font(.callout).foregroundStyle(color)
+                    }
+                    Text(title)
+                        .font(.headline).fontWeight(.semibold)
+                        .foregroundStyle(AppTheme.primaryText)
+                        .lineLimit(2)
+                    Spacer()
+                    if let badge = badge {
+                        Text(badge)
+                            .font(.caption2).fontWeight(.bold)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .background(Capsule().fill(color))
+                    }
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption).foregroundStyle(AppTheme.secondaryText)
+                }
                 .padding(14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 0) {
+                    Divider().background(color.opacity(0.2))
+                    content().padding(16)
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 180)
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(AppTheme.cardBackground)
-                .shadow(color: AppTheme.cardShadow, radius: 8, x: 0, y: 2)
-        )
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(color.opacity(isExpanded ? 0.3 : 0.1), lineWidth: 1))
+        .animation(.easeInOut(duration: 0.25), value: isExpanded)
     }
 }
 
-struct LearnStateComparisonCard: View {
-    let title: String
-    let icon: String
+struct EscapeCallout: View {
+    let text: String
     let color: Color
-    let states: [(icon: String, title: String, behavior: String, reason: String, color: Color)]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label(title, systemImage: icon)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(color)
-            VStack(spacing: 12) {
-                ForEach(Array(states.enumerated()), id: \.offset) { _, state in
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: state.icon)
-                                .foregroundStyle(.white)
-                                .font(.title2)
-                                .frame(width: 44, height: 44)
-                                .background(state.color)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(state.title)
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                                Text(state.behavior)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.primary)
-                                Text(state.reason)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
+        Text(text)
+            .font(.system(.subheadline, design: .monospaced))
+            .fontWeight(.semibold)
+            .foregroundStyle(color)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .background(color.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(color.opacity(0.3), lineWidth: 1))
+    }
+}
+
+struct EscapeEquationCard: View {
+    let lines: [String]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(lines, id: \.self) { line in
+                Text(line)
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(line.isEmpty ? .clear : .white.opacity(0.85))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(Color(hex: "#0D1525"))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 1))
+    }
+}
+
+struct EscapeBullet: View {
+    let color: Color
+    let text: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Circle().fill(color.opacity(0.7)).frame(width: 7, height: 7).padding(.top, 5)
+            Text(text)
+                .font(.subheadline).foregroundStyle(AppTheme.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
+struct EscapeBehaviorRow: View {
+    let icon: String
+    let title: String
+    let behavior: String
+    let reason: String
+    let color: Color
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            ZStack {
+                Circle().fill(color.opacity(0.15)).frame(width: 36, height: 36)
+                Image(systemName: icon)
+                    .font(.title3).foregroundStyle(color)
+            }
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.headline).foregroundStyle(AppTheme.primaryText)
+                Text(behavior)
+                    .font(.subheadline).fontWeight(.semibold).foregroundStyle(color)
+                Text(reason)
+                    .font(.caption).foregroundStyle(AppTheme.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer()
+        }
+        .padding(12)
+        .background(AppTheme.surfaceBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(color.opacity(0.2), lineWidth: 1))
+    }
+}
+
+struct EscapeTable: View {
+    var body: some View {
+        VStack(spacing: 1) {
+            EscapeTableRow(bodyName: "Sun", speed: "618 km/s", detail: "Enormous mass dominates the solar system.", color: .orange)
+            EscapeTableRow(bodyName: "Jupiter", speed: "59.5 km/s", detail: "Massive! 318 times Earth's mass.", color: .yellow)
+            EscapeTableRow(bodyName: "Earth", speed: "11.2 km/s", detail: "Large mass, moderate radius.", color: .blue)
+            EscapeTableRow(bodyName: "Mars", speed: "5.0 km/s", detail: "Smaller mass and radius than Earth.", color: .red)
+            EscapeTableRow(bodyName: "Moon", speed: "2.4 km/s", detail: "Small mass, about 1/81 of Earth's.", color: .gray)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8)).clipped()
+    }
+}
+
+struct EscapeTableRow: View {
+    let bodyName: String
+    let speed: String
+    let detail: String
+    let color: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(bodyName)
+                    .font(.subheadline).fontWeight(.semibold).foregroundStyle(AppTheme.primaryText)
+                Spacer()
+                Text(speed)
+                    .font(.system(.subheadline, design: .monospaced)).fontWeight(.bold)
+                    .foregroundStyle(color)
+            }
+            Text(detail)
+                .font(.caption).foregroundStyle(AppTheme.secondaryText)
+        }
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(color.opacity(0.07))
+    }
+}
+
+struct EscapeStepCard: View {
+    let steps: [(String, String, String)]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(steps.enumerated()), id: \.offset) { i, step in
+                HStack(alignment: .top, spacing: 10) {
+                    ZStack {
+                        Circle().fill(AppTheme.primaryAccent.opacity(0.2)).frame(width: 24, height: 24)
+                        Text(step.0).font(.caption2).fontWeight(.bold).foregroundStyle(AppTheme.primaryAccent)
                     }
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(step.1)
+                            .font(.caption).fontWeight(.semibold).foregroundStyle(AppTheme.primaryText)
+                        Text(step.2)
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer()
+                }
+                .padding(10)
+                if i < steps.count - 1 {
+                    Divider().background(AppTheme.tertiaryText.opacity(0.3)).padding(.leading, 44)
+                }
+            }
+        }
+        .background(Color(hex: "#0D1525"))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 1))
+    }
+}
+
+struct EscapeMisconceptionRow: View {
+    let myth: String
+    let reality: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "xmark.octagon.fill")
+                    .foregroundStyle(.red)
+                    .font(.caption)
+                    .padding(.top, 3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Misconception")
+                        .font(.caption2).fontWeight(.bold).foregroundStyle(.red)
+                    Text(myth)
+                        .font(.subheadline).fontWeight(.semibold).foregroundStyle(AppTheme.primaryText)
                 }
             }
 
-            Text("Note: At 400 km altitude (ISS), escape velocity is ~10.9 km/s, slightly less than at surface")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 180)
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(AppTheme.cardBackground)
-                .shadow(color: AppTheme.cardShadow, radius: 8, x: 0, y: 2)
-        )
-    }
-}
-
-struct LearnPlanetExamplesCard: View {
-    let title: String
-    let icon: String
-    let color: Color
-    let planetExamples: [(planet: String, color: Color, examples: [(String, String)])]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label(title, systemImage: icon)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(color)
-            VStack(alignment: .leading, spacing: 12) {
-                ForEach(Array(planetExamples.enumerated()), id: \.offset) { index, planetGroup in
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(planetGroup.planet)
-                            .font(.subheadline)
-                            .fontWeight(.bold)
-                            .foregroundStyle(planetGroup.color)
-
-                        ForEach(Array(planetGroup.examples.enumerated()), id: \.offset) { _, example in
-                            HStack(alignment: .top, spacing: 10) {
-                                Image(systemName: example.0)
-                                    .font(.subheadline)
-                                    .foregroundStyle(color)
-                                    .frame(width: 22)
-                                Text(example.1)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.primary.opacity(0.85))
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-                    }
-
-                    if index < planetExamples.count - 1 {
-                        Divider()
-                            .padding(.vertical, 4)
-                    }
-                }
-
-                Divider()
-                    .padding(.vertical, 4)
-
-                HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: "tornado")
-                        .font(.subheadline)
-                        .foregroundStyle(color)
-                        .frame(width: 22)
-                    Text("Black hole: Escape velocity exceeds speed of light - nothing escapes!")
-                        .font(.subheadline)
-                        .foregroundStyle(.primary.opacity(0.85))
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+                    .font(.caption)
+                    .padding(.top, 3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Reality")
+                        .font(.caption2).fontWeight(.bold).foregroundStyle(.green)
+                    Text(reality)
+                        .font(.caption).foregroundStyle(AppTheme.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 180)
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(AppTheme.cardBackground)
-                .shadow(color: AppTheme.cardShadow, radius: 8, x: 0, y: 2)
-        )
+        .padding(12)
+        .background(Color(hex: "#0D1525"))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.08), lineWidth: 1))
     }
 }
 
-struct LearnTipCard: View {
-    let title: String
-    let icon: String
-    let color: Color
-    let tips: [String]
+struct EscapeQACard: View {
+    let question: String
+    let answer: String
+    @State private var revealed = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label(title, systemImage: icon)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(color)
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(Array(tips.enumerated()), id: \.offset) { _, tip in
-                    HStack(alignment: .top, spacing: 8) {
-                        Circle()
-                            .fill(color)
-                            .frame(width: 8, height: 8)
-                            .padding(.top, 6)
-                        Text(tip)
-                            .font(.subheadline)
-                            .foregroundStyle(.primary.opacity(0.85))
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+        VStack(alignment: .leading, spacing: 8) {
+            Text(question)
+                .font(.subheadline).fontWeight(.semibold)
+                .foregroundStyle(AppTheme.primaryText)
+
+            if revealed {
+                Text(answer)
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.primaryAccent)
+                    .transition(.opacity)
+            } else {
+                Button(action: { withAnimation { revealed = true } }) {
+                    Text("Tap to reveal answer")
+                        .font(.caption2).fontWeight(.bold)
+                        .foregroundStyle(AppTheme.primaryAccent)
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .background(AppTheme.primaryAccent.opacity(0.1))
+                        .clipShape(Capsule())
                 }
             }
         }
+        .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 180)
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(AppTheme.cardBackground)
-                .shadow(color: AppTheme.cardShadow, radius: 8, x: 0, y: 2)
-        )
+        .background(AppTheme.surfaceBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(AppTheme.primaryAccent.opacity(0.15), lineWidth: 1))
+    }
+}
+
+struct EscapeExperimentCard: View {
+    let title: String
+    let steps: [String]
+    let result: String
+    let color: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(title, systemImage: "flask.fill")
+                .font(.subheadline).fontWeight(.bold).foregroundStyle(color)
+
+            VStack(alignment: .leading, spacing: 3) {
+                ForEach(Array(steps.enumerated()), id: \.offset) { i, step in
+                    HStack(alignment: .top, spacing: 6) {
+                        Text("\(i+1).")
+                            .font(.caption2).fontWeight(.bold).foregroundStyle(color)
+                        Text(step)
+                            .font(.caption).foregroundStyle(AppTheme.primaryText)
+                    }
+                }
+            }
+
+            Spacer(minLength: 0)
+
+            HStack(alignment: .top, spacing: 6) {
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.caption).foregroundStyle(color)
+                Text(result)
+                    .font(.caption).foregroundStyle(AppTheme.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, minHeight: 140, alignment: .leading)
+        .background(color.opacity(0.07))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(color.opacity(0.2), lineWidth: 1))
     }
 }

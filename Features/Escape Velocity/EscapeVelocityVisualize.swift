@@ -25,35 +25,7 @@ struct EscapeVelocityVisualizeView: View {
                             title: "Speed vs Escape Velocity",
                             description: "Compare your current speed to the escape velocity for the selected body. If your speed is above escape velocity, the object will leave the gravitational pull."
                         ) {
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Text("Status: \(viewModel.stateDescription)")
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(viewModel.stateColor)
-                                    Spacer()
-                                }
-                                HStack(spacing: 12) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Your Speed")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        Text(String(format: "%.2f km/s", viewModel.bodySpeed))
-                                            .font(.title2).fontWeight(.bold).foregroundStyle(.blue)
-                                    }
-                                    .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                                    .background(Color.blue.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 10))
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Escape Velocity")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        Text(String(format: "%.1f km/s", viewModel.surfaceEscapeVelocity))
-                                            .font(.title2).fontWeight(.bold).foregroundStyle(.red)
-                                    }
-                                    .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                                    .background(Color.red.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 10))
-                                }
-                            }
+                            EscapeVelocitySummaryView(viewModel: viewModel)
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: isRegular ? 460 : 390)
@@ -78,35 +50,7 @@ struct EscapeVelocityVisualizeView: View {
                                 title: "Speed vs Escape Velocity",
                                 description: "Compare your current speed to the escape velocity for the selected body. If your speed is above escape velocity, the object will leave the gravitational pull."
                             ) {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    HStack {
-                                        Text("Status: \(viewModel.stateDescription)")
-                                            .font(.subheadline)
-                                            .fontWeight(.semibold)
-                                            .foregroundStyle(viewModel.stateColor)
-                                        Spacer()
-                                    }
-                                    HStack(spacing: 12) {
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("Your Speed")
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                            Text(String(format: "%.2f km/s", viewModel.bodySpeed))
-                                                .font(.title2).fontWeight(.bold).foregroundStyle(.blue)
-                                        }
-                                        .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                                        .background(Color.blue.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 10))
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("Escape Velocity")
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                            Text(String(format: "%.1f km/s", viewModel.surfaceEscapeVelocity))
-                                                .font(.title2).fontWeight(.bold).foregroundStyle(.red)
-                                        }
-                                        .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                                        .background(Color.red.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 10))
-                                    }
-                                }
+                                EscapeVelocitySummaryView(viewModel: viewModel)
                             }
                             .frame(width: 310, height: isRegular ? 460 : 390)
 
@@ -130,6 +74,153 @@ struct EscapeVelocityVisualizeView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
         }
+    }
+}
+
+private struct EscapeVelocitySummaryView: View {
+    var viewModel: EscapeVelocityViewModel
+
+    private var speedRatio: Double {
+        guard viewModel.surfaceEscapeVelocity > 0 else { return 0 }
+        return viewModel.bodySpeed / viewModel.surfaceEscapeVelocity
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Label("Status: \(viewModel.stateDescription)", systemImage: statusIcon)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(viewModel.stateColor)
+
+            HStack(spacing: 12) {
+                metricTile(
+                    title: "Your Speed",
+                    value: String(format: "%.2f km/s", viewModel.bodySpeed),
+                    color: .blue
+                )
+
+                metricTile(
+                    title: "Escape Velocity",
+                    value: String(format: "%.1f km/s", viewModel.surfaceEscapeVelocity),
+                    color: .red
+                )
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text("Speed Ratio")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.secondaryText)
+                    Spacer()
+                    Text(String(format: "%.0f%%", speedRatio * 100))
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(viewModel.stateColor)
+                }
+
+                EscapeVelocityRatioBar(
+                    ratio: speedRatio,
+                    color: viewModel.stateColor
+                )
+
+                HStack {
+                    Text("Below escape")
+                    Spacer()
+                    Text("Escapes")
+                }
+                .font(.caption2)
+                .foregroundStyle(AppTheme.tertiaryText)
+            }
+            .padding(12)
+            .background(AppTheme.surfaceBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+
+            Spacer(minLength: 0)
+
+            Text(summaryText)
+                .font(.footnote)
+                .foregroundStyle(AppTheme.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(viewModel.stateColor.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .frame(maxHeight: .infinity, alignment: .top)
+    }
+
+    private func metricTile(title: String, value: String, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(AppTheme.secondaryText)
+            Text(value)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundStyle(color)
+                .minimumScaleFactor(0.8)
+                .lineLimit(1)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(color.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    private var statusIcon: String {
+        switch viewModel.orbitalState {
+        case .stable:
+            return "checkmark.circle.fill"
+        case .escaping:
+            return "arrow.up.circle.fill"
+        case .decaying:
+            return "exclamationmark.triangle.fill"
+        }
+    }
+
+    private var summaryText: String {
+        if viewModel.hasEscaped {
+            return "\(viewModel.selectedBody.rawValue)'s gravity can no longer hold the object at this speed."
+        }
+        return "Increase speed past the threshold to escape \(viewModel.selectedBody.rawValue)'s gravity."
+    }
+}
+
+private struct EscapeVelocityRatioBar: View {
+    let ratio: Double
+    let color: Color
+
+    var body: some View {
+        GeometryReader { geometry in
+            let maxRatio = 1.25
+            let width = geometry.size.width
+            let clampedRatio = min(max(ratio, 0), maxRatio)
+            let speedX = width * clampedRatio / maxRatio
+            let thresholdX = width / maxRatio
+
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color.gray.opacity(0.22))
+                    .frame(height: 8)
+
+                Capsule()
+                    .fill(color)
+                    .frame(width: max(8, speedX), height: 8)
+
+                Rectangle()
+                    .fill(Color.red.opacity(0.9))
+                    .frame(width: 2, height: 22)
+                    .offset(x: thresholdX)
+
+                Circle()
+                    .fill(color)
+                    .overlay(Circle().stroke(Color.white.opacity(0.8), lineWidth: 2))
+                    .frame(width: 18, height: 18)
+                    .offset(x: max(0, min(width - 18, speedX - 9)))
+            }
+            .frame(maxHeight: .infinity)
+        }
+        .frame(height: 24)
     }
 }
 

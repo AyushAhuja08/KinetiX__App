@@ -1,10 +1,8 @@
-
-
 import SwiftUI
 
 struct LinearMotionLearnView: View {
     var viewModel: LinearMotionViewModel
-    @State private var showAllChanges = false
+    @State private var expandedSection: Int? = 0
 
     var body: some View {
         ScrollView {
@@ -16,421 +14,638 @@ struct LinearMotionLearnView: View {
                     color: .blue
                 )
 
-                //Basic Information
-                ConceptExplanationCard(
+                // Section 0: Your Changes
+                LinearLearnSection(
+                    number: 0,
+                    title: viewModel.changeEvents.isEmpty ? "Your Changes (none yet)" : "Your Changes (\(viewModel.changeEvents.count))",
+                    icon: "pencil.and.list.clipboard",
+                    color: .yellow,
+                    badge: viewModel.changeEvents.isEmpty ? nil : "\(viewModel.changeEvents.count)",
+                    expandedSection: $expandedSection
+                ) {
+                    if viewModel.changeEvents.isEmpty {
+                        VStack(spacing: 12) {
+                            Image(systemName: "hand.point.up.left")
+                                .font(.largeTitle)
+                                .foregroundStyle(AppTheme.tertiaryText)
+                            Text("Adjust any slider on the Visualize tab. Each change will appear here with a full physics explanation.")
+                                .font(.subheadline)
+                                .foregroundStyle(AppTheme.secondaryText)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                    } else {
+                        VStack(spacing: 10) {
+                            ForEach(viewModel.changeEvents.reversed()) { event in
+                                LinearChangeCard(change: event)
+                            }
+
+                            Button(action: {
+                                withAnimation { viewModel.changeEvents.removeAll() }
+                            }) {
+                                Label("Clear History", systemImage: "trash")
+                                    .font(.caption)
+                                    .foregroundStyle(.red.opacity(0.8))
+                            }
+                            .padding(.top, 4)
+                        }
+                    }
+                }
+
+                // Section 1: Live Simulation State
+                LinearLearnSection(
+                    number: 1,
+                    title: "Live Simulation State",
+                    icon: "waveform.path.ecg",
+                    color: .cyan,
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    LinearLiveCard(viewModel: viewModel)
+                }
+
+                // Section 2: What is Linear Motion?
+                LinearLearnSection(
+                    number: 2,
                     title: "What is Linear Motion?",
                     icon: "arrow.right.circle.fill",
                     color: .indigo,
-                    explanation: "Linear motion is movement along a straight line. It's the simplest form of motion, where an object's position changes in one dimension over time. Think of a car driving on a straight highway or a ball rolling in a single direction.",
-                    expandablePoints: [
-                        "Position (s): Where the object is located at any moment",
-                        "Velocity (v): How fast the position is changing - the rate of motion",
-                        "Acceleration (a): How fast the velocity is changing - the rate of change of rate of motion",
-                        "These three quantities are connected through calculus: velocity is the derivative of position, and acceleration is the derivative of velocity"
-                    ]
-                )
-
-
-                LearnHeroCard(
-                    title: "Live Values",
-                    icon: "waveform.path.ecg",
-                    color: .blue
+                    badge: nil,
+                    expandedSection: $expandedSection
                 ) {
-                    VStack(spacing: 12) {
-                        LearnValueRow(label: "Time", value: String(format: "%.2f s", viewModel.currentTime), icon: "clock", color: .blue)
-                        LearnValueRow(label: "Distance s(t)", value: String(format: "%.2f m", viewModel.currentDistance), icon: "arrow.right", color: .green)
-                        LearnValueRow(label: "Velocity v(t)", value: String(format: "%.2f m/s", viewModel.currentVelocity), icon: "speedometer", color: .orange)
-                        LearnValueRow(label: "Acceleration a(t)", value: String(format: "%.2f m/s²", viewModel.currentAcceleration), icon: "gauge.high", color: .red)
-                    }
-                    Text("Values at the current time cursor (red line)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 4)
-                }
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("Linear motion is movement along a straight line. It's the simplest form of motion, where an object's position changes in one dimension over time. Think of a car driving on a straight highway or a ball rolling in a single direction.")
+                            .font(.body).foregroundStyle(AppTheme.primaryText)
 
+                        LinearCallout(text: "Position, velocity, and acceleration are the fundamental elements describing any straight-line path.", color: .indigo)
 
-                PhysicsChangesSection(
-                    title: viewModel.changeEvents.isEmpty ? "Your Changes (none yet)" : "Your Changes (\(viewModel.changeEvents.count))",
-                    badge: viewModel.changeEvents.isEmpty ? nil : "\(viewModel.changeEvents.count)",
-                    isEmpty: viewModel.changeEvents.isEmpty,
-                    emptyPrompt: "Adjust any slider on the Visualize tab. Each change will appear here with a full physics explanation.",
-                    onClear: { viewModel.changeEvents.removeAll() }
-                ) {
-                    let displayedEvents = showAllChanges ? viewModel.changeEvents.reversed() : Array(viewModel.changeEvents.reversed().prefix(3))
-                    
-                    VStack(spacing: 10) {
-                        ForEach(displayedEvents) { event in
-                            PhysicsChangeCard(
-                                parameter: event.changedParameter,
-                                headline: event.headline,
-                                explanation: event.physicsExplanation,
-                                icon: event.paramIcon,
-                                color: event.paramColor,
-                                timestamp: String(format: "t = %.2f s", event.time)
-                            )
-                        }
-                        
-                        if viewModel.changeEvents.count > 3 {
-                            Button(action: {
-                                withAnimation {
-                                    showAllChanges.toggle()
-                                }
-                            }) {
-                                HStack(spacing: 4) {
-                                    Text(showAllChanges ? "See Less" : "See All (\(viewModel.changeEvents.count))")
-                                    Image(systemName: showAllChanges ? "chevron.up" : "chevron.down")
-                                }
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundStyle(AppTheme.primaryAccent)
-                            }
-                            .padding(.vertical, 4)
-                        }
+                        Text("Three primary values describe this motion:")
+                            .font(.body).foregroundStyle(AppTheme.primaryText)
+
+                        LinearBullet(color: .green, text: "Position (s) — Where the object is located relative to the starting point.")
+                        LinearBullet(color: .orange, text: "Velocity (v) — How fast the position changes over time (the rate of change of position).")
+                        LinearBullet(color: .red, text: "Acceleration (a) — How fast velocity changes (the rate of change of velocity).")
+
+                        Text("These quantities are mathematically connected: velocity is the slope (derivative) of position, and acceleration is the slope (derivative) of velocity.")
+                            .font(.subheadline).foregroundStyle(AppTheme.secondaryText)
                     }
                 }
 
-
-                GraphInterpretationCard(
+                // Section 3: Reading the Graphs
+                LinearLearnSection(
+                    number: 3,
                     title: "Reading the Graphs",
                     icon: "chart.xyaxis.line",
                     color: .cyan,
-                    graphName: "position-time",
-                    interpretations: [
-                        (aspect: "Positive slope", meaning: "Object moving forward (positive velocity)"),
-                        (aspect: "Negative slope", meaning: "Object moving backward (negative velocity)"),
-                        (aspect: "Steeper slope", meaning: "Faster speed - velocity has greater magnitude"),
-                        (aspect: "Horizontal line", meaning: "Object is stationary (zero velocity)"),
-                        (aspect: "Curved line", meaning: "Velocity is changing - acceleration is present")
-                    ]
-                )
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("Looking at the plots of Position, Velocity, and Acceleration vs. Time reveals distinct visual behaviors:")
+                            .font(.body).foregroundStyle(AppTheme.primaryText)
 
+                        LinearInsightRow(icon: "arrow.up.right", color: .green, text: "Positive slope on position plot: Moving forward (positive velocity)")
+                        LinearInsightRow(icon: "arrow.down.right", color: .red, text: "Negative slope on position plot: Moving backward (negative velocity)")
+                        LinearInsightRow(icon: "gauge.high", color: .orange, text: "Steeper slope: Speeding up - velocity has a greater magnitude")
+                        LinearInsightRow(icon: "minus", color: .purple, text: "Horizontal line on position plot: Object is stationary (zero velocity)")
+                        LinearInsightRow(icon: "rotate.right", color: .cyan, text: "Curved line on position plot: Velocity is changing, meaning acceleration is present")
+                    }
+                }
 
-                StepByStepCard(
-                    title: "Calculus Connection: How the Graphs Relate",
+                // Section 4: Calculus Connection
+                LinearLearnSection(
+                    number: 4,
+                    title: "Calculus Connection — Deep Dive",
                     icon: "infinity",
                     color: .mint,
-                    steps: [
-                        (phase: "Position → Velocity", description: "The slope of the position graph gives you velocity. Steep upward = fast forward. Steep downward = fast backward."),
-                        (phase: "Velocity → Acceleration", description: "The slope of the velocity graph gives you acceleration. Upward slope = speeding up. Downward slope = slowing down."),
-                        (phase: "Velocity → Displacement", description: "The area under the velocity graph gives you total displacement. Positive area = net forward motion."),
-                        (phase: "Acceleration → Velocity Change", description: "The area under the acceleration graph gives you how much velocity changed. This is the integral relationship.")
-                    ]
-                )
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Position, velocity, and acceleration are connected through derivatives (slopes) and integrals (areas under curves):")
+                            .font(.body).foregroundStyle(AppTheme.primaryText)
 
+                        LinearStepCard(steps: [
+                            ("1", "Position → Velocity", "v = ds/dt\nThe slope of the position-time graph gives the instantaneous velocity at that moment."),
+                            ("2", "Velocity → Acceleration", "a = dv/dt\nThe slope of the velocity-time graph gives the instantaneous acceleration."),
+                            ("3", "Velocity → Displacement", "Δs = ∫ v dt\nThe area under the velocity-time graph equals the total change in position (displacement)."),
+                            ("4", "Acceleration → Velocity Change", "Δv = ∫ a dt\nThe area under the acceleration-time graph gives the total change in velocity.")
+                        ])
+                    }
+                }
 
-                MisconceptionCard(
+                // Section 5: Common Misconceptions
+                LinearLearnSection(
+                    number: 5,
                     title: "Common Misconceptions",
                     icon: "exclamationmark.triangle.fill",
                     color: .red,
-                    misconceptions: [
-                        (
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        LinearMisconceptionRow(
                             myth: "Negative acceleration always means slowing down",
                             reality: "Negative acceleration means acceleration in the negative direction. If you're moving backward (negative velocity), negative acceleration actually speeds you up in that direction!"
-                        ),
-                        (
+                        )
+                        LinearMisconceptionRow(
                             myth: "Zero acceleration means the object isn't moving",
                             reality: "Zero acceleration means velocity isn't changing. The object could be moving at constant velocity! Think of cruise control in a car."
-                        ),
-                        (
+                        )
+                        LinearMisconceptionRow(
                             myth: "Velocity and speed are the same thing",
                             reality: "Velocity includes direction (positive or negative), while speed is just the magnitude. An object moving backward at 10 m/s has velocity -10 m/s but speed 10 m/s."
                         )
-                    ]
-                )
+                    }
+                }
 
-
-                InteractiveQuestionCard(
+                // Section 6: Test Your Understanding
+                LinearLearnSection(
+                    number: 6,
                     title: "Test Your Understanding",
                     icon: "questionmark.circle.fill",
                     color: .purple,
-                    questions: [
-                        QA(
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(spacing: 12) {
+                        LinearQACard(
                             question: "If position vs time graph is a straight line, what can you say about acceleration?",
                             answer: "Acceleration must be zero! A straight line means constant velocity, and constant velocity means no acceleration."
-                        ),
-                        QA(
+                        )
+                        LinearQACard(
                             question: "Can an object have velocity in one direction and acceleration in the opposite direction?",
                             answer: "Yes! This is exactly what happens when you're slowing down. For example, moving forward (positive velocity) while braking (negative acceleration)."
-                        ),
-                        QA(
+                        )
+                        LinearQACard(
                             question: "What does it mean when velocity graph crosses the time axis?",
                             answer: "The object changes direction! It stops momentarily (zero velocity) and then starts moving in the opposite direction."
                         )
-                    ]
-                )
+                    }
+                }
 
-
-                LearnEquationCard(
+                // Section 7: The Equations
+                LinearLearnSection(
+                    number: 7,
                     title: "The Equations",
                     icon: "function",
                     color: .purple,
-                    equations: [
-                        "s(t) = s₀ + v₀t + ½at²",
-                        "v(t) = v₀ + at",
-                        "a(t) = constant"
-                    ]
-                )
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("For motion with constant acceleration, the SUVAT kinematic equations link distance, speed, and acceleration:")
+                            .font(.body).foregroundStyle(AppTheme.primaryText)
 
+                        LinearEquationCard(lines: [
+                            "Position:       s(t) = s₀ + v₀t + ½at²",
+                            "Velocity:       v(t) = v₀ + at",
+                            "Acceleration:   a(t) = constant",
+                            "Time-independent: v² = v₀² + 2as"
+                        ])
+                    }
+                }
 
-                LearnDetailedExamplesCard(
+                // Section 8: Real-World Examples
+                LinearLearnSection(
+                    number: 8,
                     title: "Real-World Examples",
                     icon: "car.fill",
                     color: .orange,
-                    examples: [
-                        ("car", "Car accelerating from rest", "v₀ = 0, a > 0"),
-                        ("brake.signal", "Car braking", "v₀ > 0, a < 0"),
-                        ("arrow.up.circle", "Object thrown upward", "v₀ > 0, a = -9.8 m/s²"),
-                        ("building.2", "Elevator", "Complex velocity profile"),
-                        ("sparkles", "Rocket launch", "Increasing acceleration")
-                    ]
-                )
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        LinearExampleRow(icon: "car.fill", title: "Car accelerating from rest", detail: "Initial velocity is zero (v₀ = 0), acceleration is positive (a > 0).", color: .green)
+                        LinearExampleRow(icon: "hand.raised.fill", title: "Car braking", detail: "Initial velocity is forward (v₀ > 0), acceleration is backward (a < 0).", color: .red)
+                        LinearExampleRow(icon: "arrow.up.circle.fill", title: "Object thrown upward", detail: "v₀ > 0, acceleration is gravity downward (a = -9.8 m/s²).", color: .orange)
+                        LinearExampleRow(icon: "building.2.fill", title: "Elevator", detail: "Phases of positive acceleration, constant velocity, and negative acceleration.", color: .blue)
+                    }
+                }
+
+                // Section 9: Experiments to Try
+                LinearLearnSection(
+                    number: 9,
+                    title: "Experiments to Try",
+                    icon: "flask.fill",
+                    color: .pink,
+                    badge: nil,
+                    expandedSection: $expandedSection
+                ) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        LinearExperimentCard(
+                            title: "Constant Velocity",
+                            steps: ["Set acceleration to exactly 0 m/s²", "Set initial velocity to 5 m/s", "Press Play"],
+                            result: "Watch the velocity graph stay perfectly flat. Position is a straight, slanted line.",
+                            color: .cyan
+                        )
+                        LinearExperimentCard(
+                            title: "Slowing to a Stop & Reversing",
+                            steps: ["Set initial velocity to 6 m/s", "Set acceleration to -2 m/s²", "Press Play"],
+                            result: "At t = 3s, velocity reaches zero and the object stops. Then it reverses direction and velocity goes negative.",
+                            color: .orange
+                        )
+                        LinearExperimentCard(
+                            title: "Rapid Acceleration",
+                            steps: ["Set acceleration to 5 m/s²", "Set initial velocity to 0 m/s", "Press Play"],
+                            result: "The position curve bends sharply upward as velocity increases rapidly.",
+                            color: .green
+                        )
+                    }
+                }
+
+                Spacer(minLength: 40)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal)
+            .padding(.vertical)
         }
+        .background(AppTheme.background.ignoresSafeArea())
     }
 }
 
-struct LearnHeroCard<Content: View>: View {
-    let title: String
-    let icon: String
-    let color: Color
-    let content: Content
+// MARK: - Subviews
 
-    init(title: String, icon: String, color: Color, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.icon = icon
-        self.color = color
-        self.content = content()
-    }
+struct LinearChangeCard: View {
+    let change: LinearChangeEvent
+    @State private var expanded = true
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label(title, systemImage: icon)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(color)
-            content
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: { withAnimation(.easeInOut(duration: 0.2)) { expanded.toggle() } }) {
+                HStack(spacing: 10) {
+                    ZStack {
+                        Circle().fill(change.paramColor.opacity(0.15)).frame(width: 32, height: 32)
+                        Image(systemName: change.paramIcon)
+                            .font(.caption).foregroundStyle(change.paramColor)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(change.changedParameter)
+                            .font(.caption2).fontWeight(.semibold)
+                            .foregroundStyle(change.paramColor)
+                        Text(change.headline)
+                            .font(.caption).foregroundStyle(AppTheme.primaryText)
+                            .lineLimit(2)
+                    }
+                    Spacer()
+                    Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                        .font(.caption2).foregroundStyle(AppTheme.tertiaryText)
+                }
+                .padding(10)
+            }
+
+            if expanded {
+                Divider().background(change.paramColor.opacity(0.2))
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(change.physicsExplanation)
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.primaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(10)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(AppTheme.cardBackground)
-                .shadow(color: AppTheme.cardShadow, radius: 8, x: 0, y: 2)
-        )
+        .background(change.paramColor.opacity(0.05))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(change.paramColor.opacity(0.2), lineWidth: 1))
+        .animation(.easeInOut(duration: 0.2), value: expanded)
     }
 }
 
-struct LearnValueRow: View {
+struct LinearLiveCard: View {
+    var viewModel: LinearMotionViewModel
+
+    var body: some View {
+        VStack(spacing: 6) {
+            LinearLiveRow(label: "Current Time", value: String(format: "%.2f s", viewModel.currentTime), color: .blue)
+            LinearLiveRow(label: "Distance s(t)", value: String(format: "%.2f m", viewModel.currentDistance), color: .green)
+            LinearLiveRow(label: "Velocity v(t)", value: String(format: "%.2f m/s", viewModel.currentVelocity), color: .orange)
+            LinearLiveRow(label: "Acceleration a(t)", value: String(format: "%.2f m/s²", viewModel.currentAcceleration), color: .red)
+            LinearLiveRow(label: "Current State", value: viewModel.currentInsight, color: .purple)
+        }
+    }
+}
+
+struct LinearLiveRow: View {
     let label: String
     let value: String
-    let icon: String
     let color: Color
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .foregroundStyle(color)
-                .font(.title3)
-                .frame(width: 28)
+        HStack {
             Text(label)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppTheme.secondaryText)
             Spacer()
             Text(value)
-                .font(.headline)
+                .font(.subheadline)
                 .fontWeight(.semibold)
-                .foregroundStyle(.primary)
+                .foregroundStyle(color)
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(AppTheme.surfaceBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 }
 
-struct LearnChangeSummaryCard<Content: View>: View {
+struct LinearLearnSection<Content: View>: View {
+    let number: Int
     let title: String
     let icon: String
     let color: Color
-    let content: Content
+    let badge: String?
+    @Binding var expandedSection: Int?
+    @ViewBuilder let content: () -> Content
 
-    init(title: String, icon: String, color: Color, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.icon = icon
-        self.color = color
-        self.content = content()
-    }
+    var isExpanded: Bool { expandedSection == number }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label(title, systemImage: icon)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(color)
-            content
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    expandedSection = isExpanded ? nil : number
+                }
+            }) {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle().fill(color.opacity(0.15)).frame(width: 34, height: 34)
+                        Image(systemName: icon)
+                            .font(.callout).foregroundStyle(color)
+                    }
+                    Text(title)
+                        .font(.headline).fontWeight(.semibold)
+                        .foregroundStyle(AppTheme.primaryText)
+                        .lineLimit(2)
+                    Spacer()
+                    if let badge = badge {
+                        Text(badge)
+                            .font(.caption2).fontWeight(.bold)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .background(Capsule().fill(color))
+                    }
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption).foregroundStyle(AppTheme.secondaryText)
+                }
                 .padding(14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(AppTheme.cardBackground)
-                .shadow(color: AppTheme.cardShadow, radius: 8, x: 0, y: 2)
-        )
-    }
-}
-
-struct LearnChangeHistoryCard<Content: View>: View {
-    let title: String
-    let icon: String
-    let color: Color
-    let content: Content
-
-    init(title: String, icon: String, color: Color, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.icon = icon
-        self.color = color
-        self.content = content()
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label(title, systemImage: icon)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(color)
-            VStack(alignment: .leading, spacing: 8) {
-                content
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.systemGray6))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 0) {
+                    Divider().background(color.opacity(0.2))
+                    content().padding(16)
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(AppTheme.cardBackground)
-                .shadow(color: AppTheme.cardShadow, radius: 8, x: 0, y: 2)
-        )
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(color.opacity(isExpanded ? 0.3 : 0.1), lineWidth: 1))
+        .animation(.easeInOut(duration: 0.25), value: isExpanded)
     }
 }
 
-struct LearnConceptCard: View {
-    let title: String
-    let icon: String
+struct LinearCallout: View {
+    let text: String
     let color: Color
-    let concepts: [String]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label(title, systemImage: icon)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(color)
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(Array(concepts.enumerated()), id: \.offset) { _, concept in
-                    HStack(alignment: .top, spacing: 12) {
-                        Circle()
-                            .fill(color)
-                            .frame(width: 8, height: 8)
-                            .padding(.top, 6)
-                        Text(concept)
-                            .font(.subheadline)
-                            .foregroundStyle(.primary)
+        Text(text)
+            .font(.system(.subheadline, design: .monospaced))
+            .fontWeight(.semibold)
+            .foregroundStyle(color)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .background(color.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(color.opacity(0.3), lineWidth: 1))
+    }
+}
+
+struct LinearEquationCard: View {
+    let lines: [String]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(lines, id: \.self) { line in
+                Text(line)
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(line.isEmpty ? .clear : .white.opacity(0.85))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(Color(hex: "#0D1525"))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 1))
+    }
+}
+
+struct LinearBullet: View {
+    let color: Color
+    let text: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Circle().fill(color.opacity(0.7)).frame(width: 7, height: 7).padding(.top, 5)
+            Text(text)
+                .font(.subheadline).foregroundStyle(AppTheme.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
+struct LinearInsightRow: View {
+    let icon: String
+    let color: Color
+    let text: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: icon)
+                .font(.caption).foregroundStyle(color)
+                .frame(width: 16, height: 16).padding(.top, 2)
+            Text(text)
+                .font(.subheadline).foregroundStyle(AppTheme.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
+struct LinearStepCard: View {
+    let steps: [(String, String, String)]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(steps.enumerated()), id: \.offset) { i, step in
+                HStack(alignment: .top, spacing: 10) {
+                    ZStack {
+                        Circle().fill(AppTheme.primaryAccent.opacity(0.2)).frame(width: 24, height: 24)
+                        Text(step.0).font(.caption2).fontWeight(.bold).foregroundStyle(AppTheme.primaryAccent)
+                    }
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(step.1)
+                            .font(.caption).fontWeight(.semibold).foregroundStyle(AppTheme.primaryText)
+                        Text(step.2)
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundStyle(AppTheme.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    Spacer()
+                }
+                .padding(10)
+                if i < steps.count - 1 {
+                    Divider().background(AppTheme.tertiaryText.opacity(0.3)).padding(.leading, 44)
                 }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(AppTheme.cardBackground)
-                .shadow(color: AppTheme.cardShadow, radius: 8, x: 0, y: 2)
-        )
+        .background(Color(hex: "#0D1525"))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 1))
     }
 }
 
-struct LearnEquationCard: View {
-    let title: String
-    let icon: String
-    let color: Color
-    let equations: [String]
+struct LinearMisconceptionRow: View {
+    let myth: String
+    let reality: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label(title, systemImage: icon)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(color)
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(Array(equations.enumerated()), id: \.offset) { _, equation in
-                    Text(equation)
-                        .font(.system(.body, design: .monospaced))
-                        .fontWeight(.medium)
-                        .foregroundStyle(.primary)
-                        .padding(12)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(color.opacity(0.1))
-                        )
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "xmark.octagon.fill")
+                    .foregroundStyle(.red)
+                    .font(.caption)
+                    .padding(.top, 3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Misconception")
+                        .font(.caption2).fontWeight(.bold).foregroundStyle(.red)
+                    Text(myth)
+                        .font(.subheadline).fontWeight(.semibold).foregroundStyle(AppTheme.primaryText)
+                }
+            }
+
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+                    .font(.caption)
+                    .padding(.top, 3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Reality")
+                        .font(.caption2).fontWeight(.bold).foregroundStyle(.green)
+                    Text(reality)
+                        .font(.caption).foregroundStyle(AppTheme.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(AppTheme.cardBackground)
-                .shadow(color: AppTheme.cardShadow, radius: 8, x: 0, y: 2)
-        )
+        .padding(12)
+        .background(Color(hex: "#0D1525"))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.08), lineWidth: 1))
     }
 }
 
-struct LearnDetailedExamplesCard: View {
-    let title: String
-    let icon: String
-    let color: Color
-    let examples: [(String, String, String)]
+struct LinearQACard: View {
+    let question: String
+    let answer: String
+    @State private var revealed = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label(title, systemImage: icon)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(color)
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(Array(examples.enumerated()), id: \.offset) { _, example in
-                    HStack(alignment: .top, spacing: 12) {
-                        Image(systemName: example.0)
-                            .foregroundStyle(color)
-                            .font(.title3)
-                            .frame(width: 28)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(example.1)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundStyle(.primary)
-                            Text(example.2)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+        VStack(alignment: .leading, spacing: 8) {
+            Text(question)
+                .font(.subheadline).fontWeight(.semibold)
+                .foregroundStyle(AppTheme.primaryText)
+
+            if revealed {
+                Text(answer)
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.primaryAccent)
+                    .transition(.opacity)
+            } else {
+                Button(action: { withAnimation { revealed = true } }) {
+                    Text("Tap to reveal answer")
+                        .font(.caption2).fontWeight(.bold)
+                        .foregroundStyle(AppTheme.primaryAccent)
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .background(AppTheme.primaryAccent.opacity(0.1))
+                        .clipShape(Capsule())
+                }
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppTheme.surfaceBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(AppTheme.primaryAccent.opacity(0.15), lineWidth: 1))
+    }
+}
+
+struct LinearExampleRow: View {
+    let icon: String
+    let title: String
+    let detail: String
+    let color: Color
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            ZStack {
+                Circle().fill(color.opacity(0.15)).frame(width: 32, height: 32)
+                Image(systemName: icon)
+                    .font(.caption).foregroundStyle(color)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline).fontWeight(.semibold).foregroundStyle(AppTheme.primaryText)
+                Text(detail)
+                    .font(.caption).foregroundStyle(AppTheme.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer()
+        }
+        .padding(10)
+        .background(AppTheme.surfaceBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+struct LinearExperimentCard: View {
+    let title: String
+    let steps: [String]
+    let result: String
+    let color: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(title, systemImage: "flask.fill")
+                .font(.subheadline).fontWeight(.bold).foregroundStyle(color)
+
+            VStack(alignment: .leading, spacing: 3) {
+                ForEach(Array(steps.enumerated()), id: \.offset) { i, step in
+                    HStack(alignment: .top, spacing: 6) {
+                        Text("\(i+1).")
+                            .font(.caption2).fontWeight(.bold).foregroundStyle(color)
+                        Text(step)
+                            .font(.caption).foregroundStyle(AppTheme.primaryText)
                     }
                 }
             }
+
+            Spacer(minLength: 0)
+
+            HStack(alignment: .top, spacing: 6) {
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.caption).foregroundStyle(color)
+                Text(result)
+                    .font(.caption).foregroundStyle(AppTheme.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(AppTheme.cardBackground)
-                .shadow(color: AppTheme.cardShadow, radius: 8, x: 0, y: 2)
-        )
+        .padding(12)
+        .frame(maxWidth: .infinity, minHeight: 140, alignment: .leading)
+        .background(color.opacity(0.07))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(color.opacity(0.2), lineWidth: 1))
     }
 }
