@@ -22,10 +22,12 @@ struct MotionSelectionView: View {
         ScrollView {
             VStack(spacing: 28) {
 
-                VStack(spacing: 8) {
-                    Text("Kinetica")
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                VStack(spacing: 12) {
+                    Text("Kinetica: Interactive Motion")
+                        .font(.system(size: 34, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.primaryText)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 16)
 
                     Text("Master physics through interactive visualization and deep conceptual understanding")
                         .font(.subheadline)

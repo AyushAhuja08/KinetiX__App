@@ -16,7 +16,7 @@ struct IntroductionSheet: View {
                 VStack(alignment: .leading, spacing: 28) {
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Welcome to Kinetica!")
+                        Text("Welcome to Kinetica: Interactive Motion!")
                             .font(.title2)
                             .fontWeight(.bold)
                             .foregroundStyle(AppTheme.primaryText)

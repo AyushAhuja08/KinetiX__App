@@ -98,9 +98,9 @@ struct SplashView: View {
                 .frame(width: 250, height: 250)
                 
                 // Branding texts
-                VStack(spacing: 8) {
-                    Text("Kinetica")
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                VStack(spacing: 12) {
+                    Text("Kinetica: Interactive Motion")
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [.white, .cyan.opacity(0.9), .blue],
@@ -108,8 +108,9 @@ struct SplashView: View {
                                 endPoint: .bottom
                             )
                         )
-                        .tracking(2)
-                        .scaleEffect(scaleTextAnimation ? 1.05 : 0.95)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+                        .scaleEffect(scaleTextAnimation ? 1.03 : 0.97)
                     
                     Text("Interactive Physics Sandbox")
                         .font(.system(size: 16, weight: .medium, design: .rounded))
