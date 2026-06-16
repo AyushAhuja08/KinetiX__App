@@ -112,11 +112,11 @@ struct SplashView: View {
                         .padding(.horizontal, 20)
                         .scaleEffect(scaleTextAnimation ? 1.03 : 0.97)
                     
-                    Text("Interactive Physics Sandbox")
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(.secondary)
-                        .opacity(startTextAnimation ? 0.8 : 0.0)
-                        .offset(y: startTextAnimation ? 0 : 10)
+//                    Text("Interactive Physics Sandbox")
+//                        .font(.system(size: 16, weight: .medium, design: .rounded))
+//                        .foregroundStyle(.secondary)
+//                        .opacity(startTextAnimation ? 0.8 : 0.0)
+//                        .offset(y: startTextAnimation ? 0 : 10)
                 }
                 .opacity(startTextAnimation ? 1.0 : 0.0)
                 
