@@ -1,6 +1,6 @@
 //
 //  MotionSelectionView.swift
-//  KinetiX_App
+//  Kinetica
 //
 //  Created by Ayush Ahuja on 02/05/26.
 //
@@ -23,7 +23,7 @@ struct MotionSelectionView: View {
             VStack(spacing: 28) {
 
                 VStack(spacing: 8) {
-                    Text("KinetiX")
+                    Text("Kinetica")
                         .font(.system(size: 40, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.primaryText)
 

@@ -1,6 +1,6 @@
 //
 //  IntroductionSheet.swift
-//  KinetiX_App
+//  Kinetica
 //
 //  Created by Ayush Ahuja on 02/05/26.
 //
@@ -16,7 +16,7 @@ struct IntroductionSheet: View {
                 VStack(alignment: .leading, spacing: 28) {
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Welcome to KinetiX!")
+                        Text("Welcome to Kinetica!")
                             .font(.title2)
                             .fontWeight(.bold)
                             .foregroundStyle(AppTheme.primaryText)

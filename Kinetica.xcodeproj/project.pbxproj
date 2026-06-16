@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		4290E3812FA52F6500EF2092 /* KinetiX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KinetiX.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4290E3812FA52F6500EF2092 /* Kinetica.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kinetica.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		4290E3832FA52F6500EF2092 /* KinetiX_App */ = {
+		4290E3832FA52F6500EF2092 /* Kinetica */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = KinetiX_App;
+			path = Kinetica;
 			sourceTree = "<group>";
 		};
 		42A1734A2FA5F0C1009BD14F /* Features */ = {
@@ -52,7 +52,7 @@
 		4290E3782FA52F6500EF2092 = {
 			isa = PBXGroup;
 			children = (
-				4290E3832FA52F6500EF2092 /* KinetiX_App */,
+				4290E3832FA52F6500EF2092 /* Kinetica */,
 				4290E3822FA52F6500EF2092 /* Products */,
 				42A1734A2FA5F0C1009BD14F /* Features */,
 				42A1737E2FA5F1AB009BD14F /* Language */,
@@ -64,7 +64,7 @@
 		4290E3822FA52F6500EF2092 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4290E3812FA52F6500EF2092 /* KinetiX.app */,
+				4290E3812FA52F6500EF2092 /* Kinetica.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -72,9 +72,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4290E3802FA52F6500EF2092 /* KinetiX */ = {
+		4290E3802FA52F6500EF2092 /* Kinetica */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4290E38C2FA52F6600EF2092 /* Build configuration list for PBXNativeTarget "KinetiX" */;
+			buildConfigurationList = 4290E38C2FA52F6600EF2092 /* Build configuration list for PBXNativeTarget "Kinetica" */;
 			buildPhases = (
 				4290E37D2FA52F6500EF2092 /* Sources */,
 				4290E37E2FA52F6500EF2092 /* Frameworks */,
@@ -85,17 +85,17 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				4290E3832FA52F6500EF2092 /* KinetiX_App */,
+				4290E3832FA52F6500EF2092 /* Kinetica */,
 				42A1734A2FA5F0C1009BD14F /* Features */,
 				42A1737E2FA5F1AB009BD14F /* Language */,
 				42A1738B2FA5F1CF009BD14F /* Resources */,
 				42A1738C2FA5F214009BD14F /* Shared */,
 			);
-			name = KinetiX;
+			name = Kinetica;
 			packageProductDependencies = (
 			);
-			productName = KinetiX_App;
-			productReference = 4290E3812FA52F6500EF2092 /* KinetiX.app */;
+			productName = Kinetica;
+			productReference = 4290E3812FA52F6500EF2092 /* Kinetica.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -113,7 +113,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 4290E37C2FA52F6500EF2092 /* Build configuration list for PBXProject "KinetiX" */;
+			buildConfigurationList = 4290E37C2FA52F6500EF2092 /* Build configuration list for PBXProject "Kinetica" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -127,7 +127,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				4290E3802FA52F6500EF2092 /* KinetiX */,
+				4290E3802FA52F6500EF2092 /* Kinetica */,
 			);
 		};
 /* End PBXProject section */
@@ -295,7 +295,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.ayush.KinetiX-App";
+				PRODUCT_BUNDLE_IDENTIFIER = "app.ayush.Kinetica";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -328,7 +328,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.ayush.KinetiX-App";
+				PRODUCT_BUNDLE_IDENTIFIER = "app.ayush.Kinetica";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -343,7 +343,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4290E37C2FA52F6500EF2092 /* Build configuration list for PBXProject "KinetiX" */ = {
+		4290E37C2FA52F6500EF2092 /* Build configuration list for PBXProject "Kinetica" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4290E38A2FA52F6600EF2092 /* Debug */,
@@ -352,7 +352,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4290E38C2FA52F6600EF2092 /* Build configuration list for PBXNativeTarget "KinetiX" */ = {
+		4290E38C2FA52F6600EF2092 /* Build configuration list for PBXNativeTarget "Kinetica" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4290E38D2FA52F6600EF2092 /* Debug */,

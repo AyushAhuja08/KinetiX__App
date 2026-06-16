@@ -1,6 +1,6 @@
 //
 //  FeatureRow.swift
-//  KinetiX_App
+//  Kinetica
 //
 //  Created by Ayush Ahuja on 02/05/26.
 //

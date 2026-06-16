@@ -1,6 +1,6 @@
 //
-//  KinetiX_AppApp.swift
-//  KinetiX_App
+//  KineticaApp.swift
+//  Kinetica
 //
 //  Created by Ayush Ahuja on 02/05/26.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct KinetiX_AppApp: App {
+struct KineticaApp: App {
     @State private var isSplashActive = true
 
     var body: some Scene {

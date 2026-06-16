@@ -99,7 +99,7 @@ struct SplashView: View {
                 
                 // Branding texts
                 VStack(spacing: 8) {
-                    Text("KinetiX")
+                    Text("Kinetica")
                         .font(.system(size: 48, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
